@@ -1,24 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Box, Flex, Grid, GridItem, Heading, Highlight, Icon, Mark, Text, VStack } from '@chakra-ui/react'
-import CharityCard from '@/components/CharityCard'
-import type CharityCardProps from '@/types/CharityCardProps'
-import { LuStar } from 'react-icons/lu'
+import { Grid, GridItem, Heading, Mark } from '@chakra-ui/react'
+import FeaturedCharitiesSection from '@/components/FeaturedCharitiesSection'
+import WhyDonateCryptoSection from '@/components/WhyDonateCryptoSection'
+import WhyUsSection from '@/components/WhyUsSection'
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
 })
 
 function HomeComponent() {
-
-  const data: CharityCardProps = {
-    charityCategory: "Education",
-    charityHost: "MonaKecil",
-    charityTitle: "Fight AI",
-    charityImage: new URL("https://www.cloud.google.com/bucket/4214"),
-    charityDescription: "Lorem lalalalalaaaaaaaalalaksdjflkadsj;fladjsl;fkajdslfkj;adsjf;akdsjf",
-    charityTargetDonation: 350,
-    charityCurrentDonation: 50
-  }
 
   return (
 
@@ -32,62 +22,22 @@ function HomeComponent() {
       </GridItem>
 
       <GridItem colSpan={12} mt="12">
-        <Heading textAlign="center">
-          Featured Charities
-        </Heading>
+        <Heading textAlign="center" mb="6">Featured Charities</Heading>
+        <FeaturedCharitiesSection />
       </GridItem>
 
       <GridItem colSpan={12}>
-        <Flex justify="space-between" overflowX="scroll" spaceX="6">
-
-          <Box>
-            <CharityCard charityImage={data.charityImage} charityDescription={data.charityDescription} charityCategory={data.charityCategory} charityTargetDonation={data.charityTargetDonation} charityCurrentDonation={data.charityCurrentDonation} charityHost={data.charityHost} charityTitle={data.charityTitle} />
-          </Box>
-
-          <Box>
-            <CharityCard charityImage={data.charityImage} charityDescription={data.charityDescription} charityCategory={data.charityCategory} charityTargetDonation={data.charityTargetDonation} charityCurrentDonation={data.charityCurrentDonation} charityHost={data.charityHost} charityTitle={data.charityTitle} />
-          </Box>
-
-          <Box>
-            <CharityCard charityImage={data.charityImage} charityDescription={data.charityDescription} charityCategory={data.charityCategory} charityTargetDonation={data.charityTargetDonation} charityCurrentDonation={data.charityCurrentDonation} charityHost={data.charityHost} charityTitle={data.charityTitle} />
-          </Box>
-
-          <Box>
-            <CharityCard charityImage={data.charityImage} charityDescription={data.charityDescription} charityCategory={data.charityCategory} charityTargetDonation={data.charityTargetDonation} charityCurrentDonation={data.charityCurrentDonation} charityHost={data.charityHost} charityTitle={data.charityTitle} />
-          </Box>
-
-          <Box>
-            <CharityCard charityImage={data.charityImage} charityDescription={data.charityDescription} charityCategory={data.charityCategory} charityTargetDonation={data.charityTargetDonation} charityCurrentDonation={data.charityCurrentDonation} charityHost={data.charityHost} charityTitle={data.charityTitle} />
-          </Box>
-
-        </Flex>
+        <Heading textAlign="center" mb="4">Why Donate in Crypto?</Heading>
+        <WhyDonateCryptoSection />
       </GridItem>
 
-      <GridItem colSpan={12} mt="12">
-        <Heading textAlign="center">Why Donate in Crypto?</Heading>
-        <Grid templateColumns="repeat(2, 1fr)" templateRows="repeat(3, 1fr)" placeItems="center">
+      <GridItem colSpan={12} mt={12}>
+        <Heading textAlign="center" mb="4">Why Choose Us?</Heading>
+        <WhyUsSection />
+      </GridItem>
 
-          <GridItem>
-            <Flex>
-              <Box alignSelf="center">
-                <Icon>
-                  <LuStar size={42} />
-                </Icon>
-              </Box>
-              <Box flexDir="row">
-                <Text>Hello</Text>
-                <Text>Yow!</Text>
-              </Box>
-            </Flex>
-          </GridItem>
+      <GridItem colSpan={12} mt={12}>
 
-          <GridItem>
-            <Icon>
-              <LuStar />
-            </Icon>
-          </GridItem>
-
-        </Grid>
       </GridItem>
 
     </Grid>

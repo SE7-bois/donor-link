@@ -1,5 +1,5 @@
 import type CharityCardProps from "@/types/CharityCardProps";
-import { Box, Float, Heading, Image, Mark, Progress, Text } from "@chakra-ui/react";
+import { Badge, Box, Heading, HStack, Image, Progress, Text } from "@chakra-ui/react";
 
 export default function CharityCard({ charityTitle, charityHost, charityCurrentDonation, charityTargetDonation, charityDescription, charityImage, charityCategory }: CharityCardProps) {
 
@@ -8,10 +8,11 @@ export default function CharityCard({ charityTitle, charityHost, charityCurrentD
 
   return (
     <Box w="300px">
-      <Box width="300px" position="relative">
-        <Image src="/Hutao.png" htmlWidth="300px" alt={charityImage.toString()} aspectRatio={4 / 3} />
-        <Float placement="top-start" offsetX="11" offsetY="5" zIndex={10}><Mark variant="subtle" rounded="xl" p="1">{charityCategory}</Mark></Float>
-        <Float placement="bottom-start" offsetX="10" offsetY="6" zIndex={10}><Mark variant="subtle" rounded="lg" p="0.5">${charityCurrentDonation}/${charityTargetDonation}</Mark></Float>
+      <Box position="relative">
+        <Image
+          src="/Hutao.png"
+          alt={charityImage.toString()}
+          aspectRatio={4 / 3} />
         <Progress.Root minW="full" size="sm" striped animated value={progressPercentage}>
           <Progress.Track>
             <Progress.Range />
@@ -19,10 +20,15 @@ export default function CharityCard({ charityTitle, charityHost, charityCurrentD
         </Progress.Root>
       </Box>
 
+      <HStack justify="space-between" fontSize="xs">
+        <Badge variant="subtle" colorPalette="green">{charityCategory}</Badge>
+        <Text>${charityCurrentDonation}/${charityTargetDonation}</Text>
+      </HStack>
+
       <Box>
-        <Heading>{charityTitle}</Heading>
-        <Text>{charityHost}</Text>
-        <Text>{charityDescription}</Text>
+        <Heading fontWeight="bold">{charityTitle}</Heading>
+        <Text fontSize="sm" color="darkgray">{charityHost}</Text>
+        <Text mt="4">{charityDescription}</Text>
       </Box>
     </Box>
   )

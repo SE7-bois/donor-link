@@ -1,4 +1,5 @@
 type CharityCardProps = {
+  charityId: number
   charityCategory: string
   charityImage: URL
   charityCurrentDonation: number
