@@ -3,6 +3,8 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { Box, Button, Container, Flex, Heading, HStack, IconButton, List, PopoverArrow, PopoverBody, PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger, Separator, Text, VStack } from '@chakra-ui/react'
 import { useColorMode } from '@/components/ui/color-mode'
 import { LuSun, LuMoon } from 'react-icons/lu'
+import NavigationButton from '@/components/NavigationButton'
+import StartDonatingButton from '@/components/StartDonatingButton'
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -25,28 +27,8 @@ function RootComponent() {
               {colorMode === "light" ? <LuSun /> : <LuMoon />}
             </IconButton>
 
-            <PopoverRoot lazyMount unmountOnExit>
-              <PopoverTrigger asChild>
-                <Button variant="ghost">Navigation</Button>
-              </PopoverTrigger>
-              <PopoverContent position="absolute">
-                <PopoverArrow />
-                <PopoverBody>
-
-                  <VStack>
-                    <Button variant="ghost" w="full" _focus={{ fontWeight: "bold" }} asChild>
-                      <Link to="/">Home</Link>
-                    </Button>
-                    <Button variant="ghost" w="full" _focus={{ fontWeight: "bold" }} asChild>
-                      <Link to="/about">About Us</Link>
-                    </Button>
-                  </VStack>
-
-                </PopoverBody>
-              </PopoverContent>
-            </PopoverRoot>
-
-            <Button variant="ghost">For Donors</Button>
+            <NavigationButton />
+            <StartDonatingButton />
             <Button variant="ghost">Start a Fundraiser</Button>
 
 

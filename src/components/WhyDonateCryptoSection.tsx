@@ -7,7 +7,7 @@ export default function WhyDonateCryptoSection() {
   const reasons = data
 
   return (
-    <Grid w="1/2" templateColumns="repeat(2, 1fr)" templateRows="repeat(3, 1fr)" placeItems="center" gap="4">
+    <Grid templateColumns="repeat(2, 1fr)" templateRows="repeat(3, 1fr)" placeItems="center" gap="4">
       {reasons.map((reason) => (
         <GridItem w="full" h="full">
           <Flex gapX="2">
