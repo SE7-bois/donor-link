@@ -8,42 +8,13 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as LoginImport } from './routes/login'
-import { Route as ChooseRoleImport } from './routes/chooseRole'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
-import { Route as UserIndexImport } from './routes/user/index'
-import { Route as UserUserImport } from './routes/user/_user'
-import { Route as UserUserUserIdImport } from './routes/user/_user.$userId'
-
-// Create Virtual Routes
-
-const UserImport = createFileRoute('/user')()
 
 // Create/Update Routes
-
-const UserRoute = UserImport.update({
-  id: '/user',
-  path: '/user',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const LoginRoute = LoginImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ChooseRoleRoute = ChooseRoleImport.update({
-  id: '/chooseRole',
-  path: '/chooseRole',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const AboutRoute = AboutImport.update({
   id: '/about',
@@ -55,23 +26,6 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any)
-
-const UserIndexRoute = UserIndexImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => UserRoute,
-} as any)
-
-const UserUserRoute = UserUserImport.update({
-  id: '/_user',
-  getParentRoute: () => UserRoute,
-} as any)
-
-const UserUserUserIdRoute = UserUserUserIdImport.update({
-  id: '/$userId',
-  path: '/$userId',
-  getParentRoute: () => UserUserRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -92,147 +46,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
-    '/chooseRole': {
-      id: '/chooseRole'
-      path: '/chooseRole'
-      fullPath: '/chooseRole'
-      preLoaderRoute: typeof ChooseRoleImport
-      parentRoute: typeof rootRoute
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/user': {
-      id: '/user'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof UserImport
-      parentRoute: typeof rootRoute
-    }
-    '/user/_user': {
-      id: '/user/_user'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof UserUserImport
-      parentRoute: typeof UserRoute
-    }
-    '/user/': {
-      id: '/user/'
-      path: '/'
-      fullPath: '/user/'
-      preLoaderRoute: typeof UserIndexImport
-      parentRoute: typeof UserImport
-    }
-    '/user/_user/$userId': {
-      id: '/user/_user/$userId'
-      path: '/$userId'
-      fullPath: '/user/$userId'
-      preLoaderRoute: typeof UserUserUserIdImport
-      parentRoute: typeof UserUserImport
-    }
   }
 }
 
 // Create and export the route tree
 
-interface UserUserRouteChildren {
-  UserUserUserIdRoute: typeof UserUserUserIdRoute
-}
-
-const UserUserRouteChildren: UserUserRouteChildren = {
-  UserUserUserIdRoute: UserUserUserIdRoute,
-}
-
-const UserUserRouteWithChildren = UserUserRoute._addFileChildren(
-  UserUserRouteChildren,
-)
-
-interface UserRouteChildren {
-  UserUserRoute: typeof UserUserRouteWithChildren
-  UserIndexRoute: typeof UserIndexRoute
-}
-
-const UserRouteChildren: UserRouteChildren = {
-  UserUserRoute: UserUserRouteWithChildren,
-  UserIndexRoute: UserIndexRoute,
-}
-
-const UserRouteWithChildren = UserRoute._addFileChildren(UserRouteChildren)
-
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/chooseRole': typeof ChooseRoleRoute
-  '/login': typeof LoginRoute
-  '/user': typeof UserUserRouteWithChildren
-  '/user/': typeof UserIndexRoute
-  '/user/$userId': typeof UserUserUserIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/chooseRole': typeof ChooseRoleRoute
-  '/login': typeof LoginRoute
-  '/user': typeof UserIndexRoute
-  '/user/$userId': typeof UserUserUserIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/chooseRole': typeof ChooseRoleRoute
-  '/login': typeof LoginRoute
-  '/user': typeof UserRouteWithChildren
-  '/user/_user': typeof UserUserRouteWithChildren
-  '/user/': typeof UserIndexRoute
-  '/user/_user/$userId': typeof UserUserUserIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/chooseRole'
-    | '/login'
-    | '/user'
-    | '/user/'
-    | '/user/$userId'
+  fullPaths: '/' | '/about'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/chooseRole' | '/login' | '/user' | '/user/$userId'
-  id:
-    | '__root__'
-    | '/'
-    | '/about'
-    | '/chooseRole'
-    | '/login'
-    | '/user'
-    | '/user/_user'
-    | '/user/'
-    | '/user/_user/$userId'
+  to: '/' | '/about'
+  id: '__root__' | '/' | '/about'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ChooseRoleRoute: typeof ChooseRoleRoute
-  LoginRoute: typeof LoginRoute
-  UserRoute: typeof UserRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ChooseRoleRoute: ChooseRoleRoute,
-  LoginRoute: LoginRoute,
-  UserRoute: UserRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -246,10 +97,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about",
-        "/chooseRole",
-        "/login",
-        "/user"
+        "/about"
       ]
     },
     "/": {
@@ -257,34 +105,6 @@ export const routeTree = rootRoute
     },
     "/about": {
       "filePath": "about.tsx"
-    },
-    "/chooseRole": {
-      "filePath": "chooseRole.tsx"
-    },
-    "/login": {
-      "filePath": "login.tsx"
-    },
-    "/user": {
-      "filePath": "user",
-      "children": [
-        "/user/_user",
-        "/user/"
-      ]
-    },
-    "/user/_user": {
-      "filePath": "user/_user.tsx",
-      "parent": "/user",
-      "children": [
-        "/user/_user/$userId"
-      ]
-    },
-    "/user/": {
-      "filePath": "user/index.tsx",
-      "parent": "/user"
-    },
-    "/user/_user/$userId": {
-      "filePath": "user/_user.$userId.tsx",
-      "parent": "/user/_user"
     }
   }
 }

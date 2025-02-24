@@ -1,6 +1,6 @@
-import { Link, Outlet, createRootRoute, useNavigate } from '@tanstack/react-router'
+import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { Box, Button, Container, Flex, Heading, HStack, IconButton, List, PopoverArrow, PopoverBody, PopoverContent, PopoverRoot, PopoverTitle, PopoverTrigger, Separator, Text, VStack } from '@chakra-ui/react'
+import { Box, Button, Container, Flex, IconButton, PopoverBody, PopoverContent, PopoverRoot, PopoverTrigger, Text, VStack } from '@chakra-ui/react'
 import { useColorMode } from '@/components/ui/color-mode'
 import { LuSun, LuMoon } from 'react-icons/lu'
 import NavigationButton from '@/components/NavigationButton'
@@ -30,7 +30,6 @@ function RootComponent() {
             <NavigationButton />
             <StartDonatingButton />
             <Button variant="ghost">Start a Fundraiser</Button>
-
 
             <PopoverRoot lazyMount unmountOnExit>
               <PopoverTrigger asChild>

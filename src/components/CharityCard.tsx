@@ -21,7 +21,7 @@ export default function CharityCard({ charityTitle, charityHost, charityCurrentD
       </Box>
 
       <HStack justify="space-between" fontSize="xs">
-        <Badge variant="subtle" colorPalette="green">{charityCategory}</Badge>
+        <Badge variant="subtle" _dark={{ colorPalette: "green" }} colorPalette="purple" >{charityCategory}</Badge>
         <Text>${charityCurrentDonation}/${charityTargetDonation}</Text>
       </HStack>
 
