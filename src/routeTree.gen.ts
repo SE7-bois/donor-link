@@ -15,19 +15,20 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout.index'
-import { Route as AppLayoutImport } from './routes/app/_layout'
+import { Route as FundraisersLayoutImport } from './routes/fundraisers/_layout'
 import { Route as LayoutAboutImport } from './routes/_layout.about'
-import { Route as AppLayoutIndexImport } from './routes/app/_layout.index'
+import { Route as FundraisersLayoutIndexImport } from './routes/fundraisers/_layout.index'
+import { Route as FundraisersLayoutIdImport } from './routes/fundraisers/_layout.$id'
 
 // Create Virtual Routes
 
-const AppImport = createFileRoute('/app')()
+const FundraisersImport = createFileRoute('/fundraisers')()
 
 // Create/Update Routes
 
-const AppRoute = AppImport.update({
-  id: '/app',
-  path: '/app',
+const FundraisersRoute = FundraisersImport.update({
+  id: '/fundraisers',
+  path: '/fundraisers',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -42,9 +43,9 @@ const LayoutIndexRoute = LayoutIndexImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const AppLayoutRoute = AppLayoutImport.update({
+const FundraisersLayoutRoute = FundraisersLayoutImport.update({
   id: '/_layout',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => FundraisersRoute,
 } as any)
 
 const LayoutAboutRoute = LayoutAboutImport.update({
@@ -53,10 +54,16 @@ const LayoutAboutRoute = LayoutAboutImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const AppLayoutIndexRoute = AppLayoutIndexImport.update({
+const FundraisersLayoutIndexRoute = FundraisersLayoutIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppLayoutRoute,
+  getParentRoute: () => FundraisersLayoutRoute,
+} as any)
+
+const FundraisersLayoutIdRoute = FundraisersLayoutIdImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => FundraisersLayoutRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -77,19 +84,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAboutImport
       parentRoute: typeof LayoutImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppImport
+    '/fundraisers': {
+      id: '/fundraisers'
+      path: '/fundraisers'
+      fullPath: '/fundraisers'
+      preLoaderRoute: typeof FundraisersImport
       parentRoute: typeof rootRoute
     }
-    '/app/_layout': {
-      id: '/app/_layout'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppLayoutImport
-      parentRoute: typeof AppRoute
+    '/fundraisers/_layout': {
+      id: '/fundraisers/_layout'
+      path: '/fundraisers'
+      fullPath: '/fundraisers'
+      preLoaderRoute: typeof FundraisersLayoutImport
+      parentRoute: typeof FundraisersRoute
     }
     '/_layout/': {
       id: '/_layout/'
@@ -98,12 +105,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
     }
-    '/app/_layout/': {
-      id: '/app/_layout/'
+    '/fundraisers/_layout/$id': {
+      id: '/fundraisers/_layout/$id'
+      path: '/$id'
+      fullPath: '/fundraisers/$id'
+      preLoaderRoute: typeof FundraisersLayoutIdImport
+      parentRoute: typeof FundraisersLayoutImport
+    }
+    '/fundraisers/_layout/': {
+      id: '/fundraisers/_layout/'
       path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppLayoutIndexImport
-      parentRoute: typeof AppLayoutImport
+      fullPath: '/fundraisers/'
+      preLoaderRoute: typeof FundraisersLayoutIndexImport
+      parentRoute: typeof FundraisersLayoutImport
     }
   }
 }
@@ -123,76 +137,89 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
-interface AppLayoutRouteChildren {
-  AppLayoutIndexRoute: typeof AppLayoutIndexRoute
+interface FundraisersLayoutRouteChildren {
+  FundraisersLayoutIdRoute: typeof FundraisersLayoutIdRoute
+  FundraisersLayoutIndexRoute: typeof FundraisersLayoutIndexRoute
 }
 
-const AppLayoutRouteChildren: AppLayoutRouteChildren = {
-  AppLayoutIndexRoute: AppLayoutIndexRoute,
+const FundraisersLayoutRouteChildren: FundraisersLayoutRouteChildren = {
+  FundraisersLayoutIdRoute: FundraisersLayoutIdRoute,
+  FundraisersLayoutIndexRoute: FundraisersLayoutIndexRoute,
 }
 
-const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
-  AppLayoutRouteChildren,
+const FundraisersLayoutRouteWithChildren =
+  FundraisersLayoutRoute._addFileChildren(FundraisersLayoutRouteChildren)
+
+interface FundraisersRouteChildren {
+  FundraisersLayoutRoute: typeof FundraisersLayoutRouteWithChildren
+}
+
+const FundraisersRouteChildren: FundraisersRouteChildren = {
+  FundraisersLayoutRoute: FundraisersLayoutRouteWithChildren,
+}
+
+const FundraisersRouteWithChildren = FundraisersRoute._addFileChildren(
+  FundraisersRouteChildren,
 )
-
-interface AppRouteChildren {
-  AppLayoutRoute: typeof AppLayoutRouteWithChildren
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppLayoutRoute: AppLayoutRouteWithChildren,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
   '/about': typeof LayoutAboutRoute
-  '/app': typeof AppLayoutRouteWithChildren
+  '/fundraisers': typeof FundraisersLayoutRouteWithChildren
   '/': typeof LayoutIndexRoute
-  '/app/': typeof AppLayoutIndexRoute
+  '/fundraisers/$id': typeof FundraisersLayoutIdRoute
+  '/fundraisers/': typeof FundraisersLayoutIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/about': typeof LayoutAboutRoute
-  '/app': typeof AppLayoutIndexRoute
+  '/fundraisers': typeof FundraisersLayoutIndexRoute
   '/': typeof LayoutIndexRoute
+  '/fundraisers/$id': typeof FundraisersLayoutIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/_layout/about': typeof LayoutAboutRoute
-  '/app': typeof AppRouteWithChildren
-  '/app/_layout': typeof AppLayoutRouteWithChildren
+  '/fundraisers': typeof FundraisersRouteWithChildren
+  '/fundraisers/_layout': typeof FundraisersLayoutRouteWithChildren
   '/_layout/': typeof LayoutIndexRoute
-  '/app/_layout/': typeof AppLayoutIndexRoute
+  '/fundraisers/_layout/$id': typeof FundraisersLayoutIdRoute
+  '/fundraisers/_layout/': typeof FundraisersLayoutIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/about' | '/app' | '/' | '/app/'
+  fullPaths:
+    | ''
+    | '/about'
+    | '/fundraisers'
+    | '/'
+    | '/fundraisers/$id'
+    | '/fundraisers/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/app' | '/'
+  to: '/about' | '/fundraisers' | '/' | '/fundraisers/$id'
   id:
     | '__root__'
     | '/_layout'
     | '/_layout/about'
-    | '/app'
-    | '/app/_layout'
+    | '/fundraisers'
+    | '/fundraisers/_layout'
     | '/_layout/'
-    | '/app/_layout/'
+    | '/fundraisers/_layout/$id'
+    | '/fundraisers/_layout/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
-  AppRoute: typeof AppRouteWithChildren
+  FundraisersRoute: typeof FundraisersRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
-  AppRoute: AppRouteWithChildren,
+  FundraisersRoute: FundraisersRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -206,7 +233,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_layout",
-        "/app"
+        "/fundraisers"
       ]
     },
     "/_layout": {
@@ -220,26 +247,31 @@ export const routeTree = rootRoute
       "filePath": "_layout.about.tsx",
       "parent": "/_layout"
     },
-    "/app": {
-      "filePath": "app",
+    "/fundraisers": {
+      "filePath": "fundraisers",
       "children": [
-        "/app/_layout"
+        "/fundraisers/_layout"
       ]
     },
-    "/app/_layout": {
-      "filePath": "app/_layout.tsx",
-      "parent": "/app",
+    "/fundraisers/_layout": {
+      "filePath": "fundraisers/_layout.tsx",
+      "parent": "/fundraisers",
       "children": [
-        "/app/_layout/"
+        "/fundraisers/_layout/$id",
+        "/fundraisers/_layout/"
       ]
     },
     "/_layout/": {
       "filePath": "_layout.index.tsx",
       "parent": "/_layout"
     },
-    "/app/_layout/": {
-      "filePath": "app/_layout.index.tsx",
-      "parent": "/app/_layout"
+    "/fundraisers/_layout/$id": {
+      "filePath": "fundraisers/_layout.$id.tsx",
+      "parent": "/fundraisers/_layout"
+    },
+    "/fundraisers/_layout/": {
+      "filePath": "fundraisers/_layout.index.tsx",
+      "parent": "/fundraisers/_layout"
     }
   }
 }

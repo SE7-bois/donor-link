@@ -21,16 +21,14 @@ export default function Header() {
         <div className="flex justify-between items-center">
           <Link to="/" className="text-lg font-bold">Donor Link</Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex gap-4 items-center font-bold text-secondary-element">
-            <Link to="/app" activeProps={{className: "text-key-element"}}>For Donors</Link>
-            <Link to="/app" activeProps={{className: "text-key-element"}}>Create Fundraiser</Link>
+            <Link to="/fundraisers" activeProps={{className: "text-key-element"}}>For Donors</Link>
+            <Link to="/fundraisers" activeProps={{className: "text-key-element"}}>Create Fundraiser</Link>
             <button className="px-4 py-2 bg-emphasized-element text-key-element font-bold rounded-md hover:bg-key-element hover:text-emphasized-element transition-colors">
               Connect Wallet
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
           <button 
             className="md:hidden p-2 text-secondary-element active:bg-emphasized-element active:text-key-element active:rounded-md transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -39,7 +37,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation - Now absolutely positioned */}
         <div className={`md:hidden absolute left-0 right-0 top-[calc(100%+1rem)] bg-background/95 backdrop-blur-sm rounded-md shadow-lg transform transition-all duration-200 ${
           isMobileMenuOpen 
             ? 'opacity-100 translate-y-0' 
@@ -47,14 +44,14 @@ export default function Header() {
         }`}>
           <nav className="flex flex-col p-4 gap-4 items-start font-bold text-secondary-element">
             <Link 
-              to="/app" 
+              to="/fundraisers" 
               activeProps={{className: "text-key-element"}}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               For Donors
             </Link>
             <Link 
-              to="/app" 
+              to="/fundraisers" 
               activeProps={{className: "text-key-element"}}
               onClick={() => setIsMobileMenuOpen(false)}
             >

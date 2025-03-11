@@ -1,7 +1,9 @@
+import { Link } from "@tanstack/react-router";
 import { AspectRatio } from "./ui/aspect-ratio";
 import { Progress } from "./ui/progress";
 
 export default function CharityCard({
+    id,
     title,
     description,
     fundraiserName,
@@ -12,7 +14,7 @@ export default function CharityCard({
 }: CharityCardProps) {
     const progress = (currentAmount / targetAmount) * 100;
     return (
-        <div className="w-full bg-emphasized-element rounded-md overflow-hidden shadow-lg hover:shadow-key-element/20 transition-all duration-300 group">
+        <Link to={`/fundraisers/${id}`} className="w-full bg-emphasized-element rounded-md overflow-hidden shadow-lg hover:shadow-key-element/20 transition-all duration-300 group cursor-pointer">
             <AspectRatio ratio={16 / 9}>
                 <img src={image} alt={title} className="w-full h-full object-cover" />
             </AspectRatio>
@@ -28,11 +30,12 @@ export default function CharityCard({
                 </div>
                 <p className="text-sm text-secondary-element line-clamp-3">{description}</p>
             </div>
-        </div>
+        </Link>
     )
 }
 
 type CharityCardProps = {
+    id: string;
     title: string;
     description: string;
     fundraiserName: string;

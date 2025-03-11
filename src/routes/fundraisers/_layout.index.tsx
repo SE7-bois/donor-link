@@ -3,12 +3,13 @@ import CategoryFilter from '@/components/CategoryFilter'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/app/_layout/')({
+export const Route = createFileRoute('/fundraisers/_layout/')({
   component: RouteComponent,
 })
 
 const charities = [
   {
+    id: "1",
     title: "Charity 1",
     description: "Description 1",
     fundraiserName: "Fundraiser 1",
@@ -18,6 +19,7 @@ const charities = [
     image: "https://picsum.photos/300/169"
   },
   {
+    id: "2",
     title: "Charity 2",
     description: "Description 2",
     fundraiserName: "Fundraiser 2",
@@ -27,6 +29,7 @@ const charities = [
     image: "https://picsum.photos/300/169"
   },
   {
+    id: "3",
     title: "Charity 3",
     description: "Description 3",
     fundraiserName: "Fundraiser 3",
@@ -36,6 +39,7 @@ const charities = [
     image: "https://picsum.photos/300/169"
   },
   {
+    id: "4",
     title: "Charity 4",
     description: "Description 4",
     fundraiserName: "Fundraiser 4",
@@ -57,7 +61,7 @@ function RouteComponent() {
         />
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
             {charities.map((charity) => (
-                <CharityCard key={charity.title} {...charity} />
+                <CharityCard key={charity.id} {...charity} />
             ))}
         </div>
     </>
