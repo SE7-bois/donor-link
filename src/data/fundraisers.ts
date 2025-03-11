@@ -1,3 +1,14 @@
+interface Fundraiser {
+  id: string;
+  title: string;
+  description: string;
+  fundraiserName: string;
+  category: string;
+  targetAmount: number;
+  currentAmount: number;
+  images: string[];
+}
+
 export const charities = [
     {
       id: "1",
@@ -7,7 +18,7 @@ export const charities = [
       category: "Category 1",
       targetAmount: 1000,
       currentAmount: 500,
-      image: "https://picsum.photos/300/169"
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
     },
     {
       id: "2",
@@ -17,7 +28,7 @@ export const charities = [
       category: "Category 2",
       targetAmount: 2000,
       currentAmount: 1000,
-      image: "https://picsum.photos/300/169"
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
     },
     {
       id: "3",
@@ -27,7 +38,7 @@ export const charities = [
       category: "Category 3",
       targetAmount: 3000,
       currentAmount: 2000,
-      image: "https://picsum.photos/300/169"
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
     },
     {
       id: "4",
@@ -37,10 +48,25 @@ export const charities = [
       category: "Category 4",
       targetAmount: 4000,
       currentAmount: 3000,
-      image: "https://picsum.photos/300/169"
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
     },
 ]
 
-export const getFundraiser = (id: string) => {
+export const getFundraiserDetail = (id: string) => {
     return charities.find((charity) => charity.id === id);
+}
+
+export const getFundraisersPreview = () => {
+  return charities.map((charity) =>{
+    return {
+      id: charity.id,
+      title: charity.title,
+      description: charity.description,
+      fundraiserName: charity.fundraiserName,
+      category: charity.category,
+      targetAmount: charity.targetAmount,
+      currentAmount: charity.currentAmount,
+      image: charity.images[0] // Just preview the main image
+    }
+  })
 }
