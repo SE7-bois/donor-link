@@ -18,6 +18,7 @@ import { Route as LayoutIndexImport } from './routes/_layout.index'
 import { Route as FundraisersLayoutImport } from './routes/fundraisers/_layout'
 import { Route as LayoutAboutImport } from './routes/_layout.about'
 import { Route as FundraisersLayoutIndexImport } from './routes/fundraisers/_layout.index'
+import { Route as FundraisersLayoutCreateImport } from './routes/fundraisers/_layout.create'
 import { Route as FundraisersLayoutIdImport } from './routes/fundraisers/_layout.$id'
 
 // Create Virtual Routes
@@ -57,6 +58,12 @@ const LayoutAboutRoute = LayoutAboutImport.update({
 const FundraisersLayoutIndexRoute = FundraisersLayoutIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => FundraisersLayoutRoute,
+} as any)
+
+const FundraisersLayoutCreateRoute = FundraisersLayoutCreateImport.update({
+  id: '/create',
+  path: '/create',
   getParentRoute: () => FundraisersLayoutRoute,
 } as any)
 
@@ -112,6 +119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FundraisersLayoutIdImport
       parentRoute: typeof FundraisersLayoutImport
     }
+    '/fundraisers/_layout/create': {
+      id: '/fundraisers/_layout/create'
+      path: '/create'
+      fullPath: '/fundraisers/create'
+      preLoaderRoute: typeof FundraisersLayoutCreateImport
+      parentRoute: typeof FundraisersLayoutImport
+    }
     '/fundraisers/_layout/': {
       id: '/fundraisers/_layout/'
       path: '/'
@@ -139,11 +153,13 @@ const LayoutRouteWithChildren =
 
 interface FundraisersLayoutRouteChildren {
   FundraisersLayoutIdRoute: typeof FundraisersLayoutIdRoute
+  FundraisersLayoutCreateRoute: typeof FundraisersLayoutCreateRoute
   FundraisersLayoutIndexRoute: typeof FundraisersLayoutIndexRoute
 }
 
 const FundraisersLayoutRouteChildren: FundraisersLayoutRouteChildren = {
   FundraisersLayoutIdRoute: FundraisersLayoutIdRoute,
+  FundraisersLayoutCreateRoute: FundraisersLayoutCreateRoute,
   FundraisersLayoutIndexRoute: FundraisersLayoutIndexRoute,
 }
 
@@ -168,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/fundraisers': typeof FundraisersLayoutRouteWithChildren
   '/': typeof LayoutIndexRoute
   '/fundraisers/$id': typeof FundraisersLayoutIdRoute
+  '/fundraisers/create': typeof FundraisersLayoutCreateRoute
   '/fundraisers/': typeof FundraisersLayoutIndexRoute
 }
 
@@ -176,6 +193,7 @@ export interface FileRoutesByTo {
   '/fundraisers': typeof FundraisersLayoutIndexRoute
   '/': typeof LayoutIndexRoute
   '/fundraisers/$id': typeof FundraisersLayoutIdRoute
+  '/fundraisers/create': typeof FundraisersLayoutCreateRoute
 }
 
 export interface FileRoutesById {
@@ -186,6 +204,7 @@ export interface FileRoutesById {
   '/fundraisers/_layout': typeof FundraisersLayoutRouteWithChildren
   '/_layout/': typeof LayoutIndexRoute
   '/fundraisers/_layout/$id': typeof FundraisersLayoutIdRoute
+  '/fundraisers/_layout/create': typeof FundraisersLayoutCreateRoute
   '/fundraisers/_layout/': typeof FundraisersLayoutIndexRoute
 }
 
@@ -197,9 +216,15 @@ export interface FileRouteTypes {
     | '/fundraisers'
     | '/'
     | '/fundraisers/$id'
+    | '/fundraisers/create'
     | '/fundraisers/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/fundraisers' | '/' | '/fundraisers/$id'
+  to:
+    | '/about'
+    | '/fundraisers'
+    | '/'
+    | '/fundraisers/$id'
+    | '/fundraisers/create'
   id:
     | '__root__'
     | '/_layout'
@@ -208,6 +233,7 @@ export interface FileRouteTypes {
     | '/fundraisers/_layout'
     | '/_layout/'
     | '/fundraisers/_layout/$id'
+    | '/fundraisers/_layout/create'
     | '/fundraisers/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -258,6 +284,7 @@ export const routeTree = rootRoute
       "parent": "/fundraisers",
       "children": [
         "/fundraisers/_layout/$id",
+        "/fundraisers/_layout/create",
         "/fundraisers/_layout/"
       ]
     },
@@ -267,6 +294,10 @@ export const routeTree = rootRoute
     },
     "/fundraisers/_layout/$id": {
       "filePath": "fundraisers/_layout.$id.tsx",
+      "parent": "/fundraisers/_layout"
+    },
+    "/fundraisers/_layout/create": {
+      "filePath": "fundraisers/_layout.create.tsx",
       "parent": "/fundraisers/_layout"
     },
     "/fundraisers/_layout/": {

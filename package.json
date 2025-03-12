@@ -16,14 +16,17 @@
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.2",
+    "tailwind-scrollbar": "^4.0.1",
     "vite": "^6.0.3"
   },
   "dependencies": {
     "@radix-ui/react-aspect-ratio": "^1.1.2",
     "@radix-ui/react-progress": "^1.1.2",
     "@tailwindcss/vite": "^4.0.12",
+    "@tanstack/react-form": "^1.0.5",
     "@tanstack/react-router": "^1.114.7",
     "@tanstack/router-devtools": "^1.114.7",
+    "@tanstack/zod-form-adapter": "^0.42.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.479.0",
@@ -31,6 +34,7 @@
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.0.12",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.2"
   }
 }
