@@ -7,6 +7,19 @@ interface Fundraiser {
   targetAmount: number;
   currentAmount: number;
   images: string[];
+  dueDate: Date;
+  successMetrics: string[];
+  plan: string;
+  timeline: string[];
+  teamMembers: TeamMember[];
+  fundAllocations: string[];
+}
+
+type TeamMember = {
+  id: string;
+  name: string;
+  image: string;
+  role: string;
 }
 
 export const charities = [
@@ -18,7 +31,8 @@ export const charities = [
       category: "Category 1",
       targetAmount: 1000,
       currentAmount: 500,
-      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"],
+      dueDate: new Date("2025-01-01")
     },
     {
       id: "2",
@@ -28,7 +42,8 @@ export const charities = [
       category: "Category 2",
       targetAmount: 2000,
       currentAmount: 1000,
-      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"],
+      dueDate: new Date("2025-01-01")
     },
     {
       id: "3",
@@ -38,7 +53,8 @@ export const charities = [
       category: "Category 3",
       targetAmount: 3000,
       currentAmount: 2000,
-      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"],
+      dueDate: new Date("2025-01-01")
     },
     {
       id: "4",
@@ -48,7 +64,8 @@ export const charities = [
       category: "Category 4",
       targetAmount: 4000,
       currentAmount: 3000,
-      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"]
+      images: ["https://picsum.photos/300/169", "https://picsum.photos/300/169", "https://picsum.photos/300/169"],
+      dueDate: new Date("2025-01-01")
     },
 ]
 

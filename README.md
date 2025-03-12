@@ -5,3 +5,6 @@
 - TailwindCSS
 - Vite
 ---
+
+# Todos:
+- 

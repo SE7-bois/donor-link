@@ -1,10 +1,11 @@
 import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { getFundraiserDetail } from '@/data/fundraisers'
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import DetailCard from '@/components/DetailCard';
 
 export const Route = createFileRoute('/fundraisers/_layout/$id')({
   component: RouteComponent,
-  loader: ({params}) => getFundraiserDetail(params.id)
+    loader: ({params}) => getFundraiserDetail(params.id)
 })
 
 function RouteComponent() {
@@ -19,12 +20,8 @@ function RouteComponent() {
         </AspectRatio>
       </div>
       <div>
-      <p>{fundraiser.title}</p>
-      <p>{fundraiser.description}</p>
-      <p>{fundraiser.targetAmount}</p>
-      <p>{fundraiser.currentAmount}</p>
-      <p>{fundraiser.category}</p>
-      <p>{fundraiser.fundraiserName}</p>
+        <p>{fundraiser.title}</p>
+        <DetailCard targetAmount={fundraiser.targetAmount} currentAmount={fundraiser.currentAmount} dueDate={fundraiser.dueDate} />
       </div>
     </div>
   )
