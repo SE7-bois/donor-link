@@ -20,7 +20,6 @@ function RouteComponent() {
           <img src={fundraiser.images[0]} className="object-cover w-full h-full rounded-md" />
         </AspectRatio>
         
-        {/* Image slider */}
         <div className='mt-4 relative'>
           <div className='flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-key-element scrollbar-track-emphasized-element'>
             {fundraiser.images.slice(1).map((image, index) => (
@@ -31,13 +30,13 @@ function RouteComponent() {
               </div>
             ))}
           </div>
-        </div>
+        </div> 
       </div>
       
       <div className='space-y-4'>
         <h1 className='font-bold'>{fundraiser.title}</h1>
         <DetailCard targetAmount={fundraiser.targetAmount} currentAmount={fundraiser.currentAmount} dueDate={fundraiser.dueDate} />
-        {/* <DonateCard status={isActive} /> */}
+        <DonateCard status={isActive} />
       </div>
     </div>
   )

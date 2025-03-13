@@ -1,5 +1,4 @@
-import { createForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
+import { formOptions, useForm } from "@tanstack/react-form";
 import { z } from "zod";
 
 type Token = {
@@ -16,7 +15,6 @@ const TOKENS: Token[] = [
   { symbol: "BTC", name: "Bitcoin", decimals: 8 },
 ];
 
-// Mock exchange rates - in a real app, these would come from an API
 const MOCK_RATES: Record<Token["symbol"], number> = {
   USDT: 1,
   USDC: 1,
@@ -33,27 +31,77 @@ const formSchema = z.object({
   ),
 });
 
-type FormSchema = z.infer<typeof formSchema>;
-
 export default function DonateCard({status}: {status: boolean}) {
-  const form = createForm<FormSchema>({
+
+  const form = useForm({
     defaultValues: {
       token: "USDT",
       amount: "",
     },
-    onSubmit: async ({ value }) => {
-      // Here you would integrate with wallet and blockchain
-      console.log("Donating", value.amount, value.token);
+    validators: {
+      onChange: formSchema,
     },
-    validatorAdapter: zodValidator,
-  });
+    onSubmit: async (data) => {
+      alert(JSON.stringify(data));
+    }
+  })
 
   const selectedToken = TOKENS.find(t => t.symbol === form.getFieldValue("token"))!;
   const amount = form.getFieldValue("amount");
   const usdValue = amount ? Number(amount) * MOCK_RATES[selectedToken.symbol] : 0;
 
   return (
-    <form.Provider>
+    <>
+      <div>
+        <form.Field
+          name="token"
+            children={(field) => (
+              <div>
+                <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
+                  Select Token
+                </label>
+                <select
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value as Token["symbol"])}
+                > 
+                  {TOKENS.map((token) => (
+                    <option key={token.symbol} value={token.symbol}>
+                      {token.symbol} - {token.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+        />
+        <form.Field
+          name="amount"
+          children={(field) => (
+            <div>
+              <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
+                Amount
+              </label>
+              <input
+                id={field.name}
+                name={field.name}
+                type="number"
+                min="0"
+                step="any"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder={`Enter amount in ${selectedToken.symbol}`}
+              />
+              <p className="text-sm text-secondary-element">
+                ≈ ${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+              </p>
+            </div>
+          )}
+        />
+    </div>
+
+
+    {/* <form.Provider>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -133,6 +181,7 @@ export default function DonateCard({status}: {status: boolean}) {
           {status ? (form.state.isSubmitting ? "Donating..." : "Donate") : "Fundraiser Ended"}
         </button>
       </form>
-    </form.Provider>
+    </form.Provider> */}
+    </>
   );
 }
