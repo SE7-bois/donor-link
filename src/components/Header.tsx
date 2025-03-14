@@ -16,7 +16,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className={`mb-4 w-full p-4 bg-background/50 backdrop-blur-sm z-[100] relative ${isSticky ? 'sticky top-0' : ''}`}>
+    <header className={`mb-4 w-full py-4 bg-background/50 backdrop-blur-sm z-[100] relative ${isSticky ? 'sticky top-0' : ''}`}>
       <div className="relative">
         <div className="flex justify-between items-center">
           <Link to="/" className="text-lg font-bold">Donor Link</Link>
@@ -30,7 +30,7 @@ export default function Header() {
           </div>
           
           <button 
-            className="md:hidden p-2 text-secondary-element active:bg-emphasized-element active:text-key-element active:rounded-md transition-colors"
+            className="md:hidden py-1 text-secondary-element active:bg-emphasized-element active:text-key-element active:rounded-md transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap');
 
 @plugin 'tailwindcss-animate';
+@plugin 'tailwind-scrollbar';
 
 @custom-variant dark (&:is(.dark *));
 @import "tailwindcss";
@@ -11,6 +12,7 @@
     --color-key-element: hsl(0, 0%, 90%);
     --color-secondary-element: hsl(0, 0%, 50%);
     --color-emphasized-element: hsl(0, 0%, 10%);
+    
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

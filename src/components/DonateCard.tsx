@@ -1,18 +1,18 @@
-import { formOptions, useForm } from "@tanstack/react-form";
+import { useForm } from "@tanstack/react-form";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 type Token = {
   symbol: "USDT" | "USDC" | "ETH" | "SOL" | "BTC";
   name: string;
-  decimals: number;
 };
 
 const TOKENS: Token[] = [
-  { symbol: "USDT", name: "Tether USD", decimals: 6 },
-  { symbol: "USDC", name: "USD Coin", decimals: 6 },
-  { symbol: "ETH", name: "Ethereum", decimals: 18 },
-  { symbol: "SOL", name: "Solana", decimals: 9 },
-  { symbol: "BTC", name: "Bitcoin", decimals: 8 },
+  { symbol: "USDT", name: "Tether USD" },
+  { symbol: "USDC", name: "USD Coin" },
+  { symbol: "ETH", name: "Ethereum" },
+  { symbol: "SOL", name: "Solana" },
+  { symbol: "BTC", name: "Bitcoin" },
 ];
 
 const MOCK_RATES: Record<Token["symbol"], number> = {
@@ -24,59 +24,95 @@ const MOCK_RATES: Record<Token["symbol"], number> = {
 };
 
 const formSchema = z.object({
-  token: z.enum(["USDT", "USDC", "ETH", "SOL", "BTC"]),
+  token: z.enum(["USDT", "USDC", "ETH", "SOL", "BTC"], {message: "Invalid token."}),
   amount: z.string().refine(
-    (val) => !isNaN(Number(val)) && Number(val) > 0,
+    (val) => !isNaN(Number(val)) && Number(val) >= 0,
     "Amount must be a positive number"
-  ),
+  )
 });
 
-export default function DonateCard({status}: {status: boolean}) {
+export default function DonateCard({status: active}: {status: boolean}) {
 
   const form = useForm({
     defaultValues: {
       token: "USDT",
-      amount: "",
+      amount: "1",
     },
-    validators: {
-      onChange: formSchema,
-    },
-    onSubmit: async (data) => {
-      alert(JSON.stringify(data));
+    onSubmit: async ({value}) => {
+      alert(JSON.stringify(value));
     }
   })
 
-  const selectedToken = TOKENS.find(t => t.symbol === form.getFieldValue("token"))!;
-  const amount = form.getFieldValue("amount");
-  const usdValue = amount ? Number(amount) * MOCK_RATES[selectedToken.symbol] : 0;
+  const [selectedToken, setSelectedToken] = useState<Token>(TOKENS.find(t => t.symbol === form.getFieldValue("token"))!);
+  const [amount, setAmount] = useState<string>(form.getFieldValue("amount"));
+  const [usdValue, setUsdValue] = useState<number>(Number(amount) * MOCK_RATES[selectedToken.symbol]);
+
+  const handleSelectTokenChange = (value: Token["symbol"]) => {
+    setSelectedToken(TOKENS.find(t => t.symbol === value)!);
+    form.setFieldValue("token", value);
+    if (amount) {
+      setUsdValue(Number(amount) * MOCK_RATES[value]);
+    }
+  }
+
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    setUsdValue(Number(value) * MOCK_RATES[selectedToken.symbol]);
+  }
 
   return (
-    <>
-      <div>
+      <form onSubmit={(e) => {
+        e.preventDefault()
+        form.handleSubmit()
+      }}
+      method="POST"
+      className={`${active ? "opacity-100" : "opacity-30"} transition-opacity duration-300 flex flex-col gap-4`}>
         <form.Field
           name="token"
-            children={(field) => (
-              <div>
-                <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
-                  Select Token
-                </label>
-                <select
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value as Token["symbol"])}
-                > 
-                  {TOKENS.map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+          validators={{
+            onChange: ({value}) => {
+              const result = formSchema.shape.token.safeParse(value)
+              if (!result.success) {
+                return result.error.format()._errors
+              }
+              handleSelectTokenChange(value as Token["symbol"])
+              return undefined
+            }
+          }}
+          children={(field) => (
+            <div>
+              <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
+                Select Token
+              </label>
+              <select
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                disabled={!active}
+                onChange={(e) => field.handleChange(e.target.value as Token["symbol"])}
+                className="w-full px-3 py-2 bg-background text-key-element rounded-md border border-secondary-element/20 focus:outline-none focus:ring-2 focus:ring-key-element/20"
+              > 
+                {TOKENS.map((token) => (
+                  <option key={token.symbol} value={token.symbol} className="text-key-element bg-emphasized-element">
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         />
         <form.Field
           name="amount"
+          validators={{
+            onChange: ({value}) => {
+              const result = formSchema.shape.amount.safeParse(value)
+              if (!result.success) {
+                return result.error.format()._errors
+              }
+              handleAmountChange(value)
+              return undefined
+            }
+          }}
           children={(field) => (
             <div>
               <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
@@ -88,74 +124,7 @@ export default function DonateCard({status}: {status: boolean}) {
                 type="number"
                 min="0"
                 step="any"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder={`Enter amount in ${selectedToken.symbol}`}
-              />
-              <p className="text-sm text-secondary-element">
-                ≈ ${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-              </p>
-            </div>
-          )}
-        />
-    </div>
-
-
-    {/* <form.Provider>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          void form.handleSubmit();
-        }}
-        className="bg-emphasized-element rounded-md p-4 space-y-4"
-      >
-        <form.Field
-          name="token"
-          validators={{
-            onChange: z.enum(["USDT", "USDC", "ETH", "SOL", "BTC"]),
-          }}
-          children={(field) => (
-            <div className="space-y-2">
-              <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
-                Select Token
-              </label>
-              <select
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value as Token["symbol"])}
-                className="w-full px-3 py-2 bg-background text-key-element rounded-md border border-secondary-element/20 focus:outline-none focus:ring-2 focus:ring-key-element/20"
-              >
-                {TOKENS.map((token) => (
-                  <option key={token.symbol} value={token.symbol}>
-                    {token.symbol} - {token.name}
-                  </option>
-                ))}
-              </select>
-              {field.state.meta.errors && (
-                <p className="text-sm text-red-500">{field.state.meta.errors.join(", ")}</p>
-              )}
-            </div>
-          )}
-        />
-
-        <form.Field
-          name="amount"
-          validators={{
-            onChange: formSchema.shape.amount,
-          }}
-          children={(field) => (
-            <div className="space-y-2">
-              <label htmlFor={field.name} className="block text-sm font-medium text-secondary-element">
-                Amount
-              </label>
-              <input
-                id={field.name}
-                name={field.name}
-                type="number"
-                min="0"
-                step="any"
+                disabled={!active}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder={`Enter amount in ${selectedToken.symbol}`}
@@ -166,22 +135,15 @@ export default function DonateCard({status}: {status: boolean}) {
               )}
               {amount && (
                 <p className="text-sm text-secondary-element">
-                  ≈ ${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                  ≈ ${usdValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USD
                 </p>
               )}
             </div>
           )}
         />
-
-        <button
-          type="submit"
-          disabled={!status || form.state.isSubmitting || !form.state.canSubmit}
-          className="w-full px-4 py-2 bg-key-element text-emphasized-element font-bold rounded-md hover:bg-key-element/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {status ? (form.state.isSubmitting ? "Donating..." : "Donate") : "Fundraiser Ended"}
+        <button type="submit" disabled={!active} className={`w-full px-3 py-2 bg-key-element text-background rounded-md border border-secondary-element/20 focus:outline-none focus:ring-2 focus:ring-key-element/20 transition-colors duration-300 cursor-pointer ${active ? "hover:bg-emphasized-element hover:text-key-element" : ""}`}>
+          Donate
         </button>
       </form>
-    </form.Provider> */}
-    </>
   );
 }
