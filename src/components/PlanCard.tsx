@@ -15,7 +15,7 @@ export default function PlanCard({ plan }: { plan: PlanProps }) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium text-key-element">{plan.plan}</h3>
+        <h3 className="font-bold text-secondary-element mb-2">Timeline</h3>
         <Timeline items={plan.timeline} />
       </div>
     </div>

@@ -75,7 +75,7 @@ function RouteComponent() {
         </div>
       </div>
       
-      <Tabs defaultValue="about" className='col-span-4'>
+      <Tabs defaultValue="about" className='col-span-4 mb-8'>
         <TabsList className='w-full bg-emphasized-element mb-4'>
           <TabsTrigger value="about">About</TabsTrigger>
           <TabsTrigger value="plan">Plan</TabsTrigger>
@@ -88,12 +88,13 @@ function RouteComponent() {
             successMetrics={fundraiser.successMetrics}
           />
         </TabsContent>
-        <TabsContent value="plan" className="space-y-4">
-          <h2 className='text-xl font-bold text-key-element'>Timeline</h2>
+        <TabsContent value="plan" className="space-y-4 mb-4">
+          <h2 className='font-bold text-secondary-element'>Plan</h2>
+          <p className='text-key-element'>{fundraiser.plan.plan}</p>
           <PlanCard plan={fundraiser.plan} />
         </TabsContent>
         <TabsContent value="team">
-          <h2 className='font-bold text-secondary-element'>Meet Our Team</h2>
+          <h2 className='font-bold text-secondary-element mb-4'>Meet Our Team</h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
             {fundraiser.teamMembers.map(member => (
               <UserCard key={member.id} {...member} />
@@ -101,9 +102,9 @@ function RouteComponent() {
           </div>
         </TabsContent>
         <TabsContent value="fundAllocation">
-          <div className="space-y-8">
-            <SankeyChart data={fundraiser.fundAllocations} />
-            <div className="space-y-4">
+          <div className="space-y-8 mb-4">
+            <SankeyChart data={fundraiser.fundAllocations} containerClassName="hidden lg:block"/>
+            <div className="space-y-4 block lg:hidden">
               {fundraiser.fundAllocations.map((allocation, index) => (
                 <div key={index} className="flex justify-between items-center p-4 bg-emphasized-element rounded-lg">
                   <div className="flex-1">

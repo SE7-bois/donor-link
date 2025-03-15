@@ -15,17 +15,26 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout.index'
+import { Route as LeaderboardLayoutImport } from './routes/leaderboard/_layout'
 import { Route as FundraisersLayoutImport } from './routes/fundraisers/_layout'
 import { Route as LayoutAboutImport } from './routes/_layout.about'
+import { Route as LeaderboardLayoutIndexImport } from './routes/leaderboard/_layout.index'
 import { Route as FundraisersLayoutIndexImport } from './routes/fundraisers/_layout.index'
 import { Route as FundraisersLayoutCreateImport } from './routes/fundraisers/_layout.create'
 import { Route as FundraisersLayoutIdImport } from './routes/fundraisers/_layout.$id'
 
 // Create Virtual Routes
 
+const LeaderboardImport = createFileRoute('/leaderboard')()
 const FundraisersImport = createFileRoute('/fundraisers')()
 
 // Create/Update Routes
+
+const LeaderboardRoute = LeaderboardImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const FundraisersRoute = FundraisersImport.update({
   id: '/fundraisers',
@@ -44,6 +53,11 @@ const LayoutIndexRoute = LayoutIndexImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LeaderboardLayoutRoute = LeaderboardLayoutImport.update({
+  id: '/_layout',
+  getParentRoute: () => LeaderboardRoute,
+} as any)
+
 const FundraisersLayoutRoute = FundraisersLayoutImport.update({
   id: '/_layout',
   getParentRoute: () => FundraisersRoute,
@@ -53,6 +67,12 @@ const LayoutAboutRoute = LayoutAboutImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => LayoutRoute,
+} as any)
+
+const LeaderboardLayoutIndexRoute = LeaderboardLayoutIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LeaderboardLayoutRoute,
 } as any)
 
 const FundraisersLayoutIndexRoute = FundraisersLayoutIndexImport.update({
@@ -105,6 +125,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FundraisersLayoutImport
       parentRoute: typeof FundraisersRoute
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/leaderboard/_layout': {
+      id: '/leaderboard/_layout'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardLayoutImport
+      parentRoute: typeof LeaderboardRoute
+    }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
@@ -132,6 +166,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/fundraisers/'
       preLoaderRoute: typeof FundraisersLayoutIndexImport
       parentRoute: typeof FundraisersLayoutImport
+    }
+    '/leaderboard/_layout/': {
+      id: '/leaderboard/_layout/'
+      path: '/'
+      fullPath: '/leaderboard/'
+      preLoaderRoute: typeof LeaderboardLayoutIndexImport
+      parentRoute: typeof LeaderboardLayoutImport
     }
   }
 }
@@ -178,19 +219,45 @@ const FundraisersRouteWithChildren = FundraisersRoute._addFileChildren(
   FundraisersRouteChildren,
 )
 
+interface LeaderboardLayoutRouteChildren {
+  LeaderboardLayoutIndexRoute: typeof LeaderboardLayoutIndexRoute
+}
+
+const LeaderboardLayoutRouteChildren: LeaderboardLayoutRouteChildren = {
+  LeaderboardLayoutIndexRoute: LeaderboardLayoutIndexRoute,
+}
+
+const LeaderboardLayoutRouteWithChildren =
+  LeaderboardLayoutRoute._addFileChildren(LeaderboardLayoutRouteChildren)
+
+interface LeaderboardRouteChildren {
+  LeaderboardLayoutRoute: typeof LeaderboardLayoutRouteWithChildren
+}
+
+const LeaderboardRouteChildren: LeaderboardRouteChildren = {
+  LeaderboardLayoutRoute: LeaderboardLayoutRouteWithChildren,
+}
+
+const LeaderboardRouteWithChildren = LeaderboardRoute._addFileChildren(
+  LeaderboardRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
   '/about': typeof LayoutAboutRoute
   '/fundraisers': typeof FundraisersLayoutRouteWithChildren
+  '/leaderboard': typeof LeaderboardLayoutRouteWithChildren
   '/': typeof LayoutIndexRoute
   '/fundraisers/$id': typeof FundraisersLayoutIdRoute
   '/fundraisers/create': typeof FundraisersLayoutCreateRoute
   '/fundraisers/': typeof FundraisersLayoutIndexRoute
+  '/leaderboard/': typeof LeaderboardLayoutIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/about': typeof LayoutAboutRoute
   '/fundraisers': typeof FundraisersLayoutIndexRoute
+  '/leaderboard': typeof LeaderboardLayoutIndexRoute
   '/': typeof LayoutIndexRoute
   '/fundraisers/$id': typeof FundraisersLayoutIdRoute
   '/fundraisers/create': typeof FundraisersLayoutCreateRoute
@@ -202,10 +269,13 @@ export interface FileRoutesById {
   '/_layout/about': typeof LayoutAboutRoute
   '/fundraisers': typeof FundraisersRouteWithChildren
   '/fundraisers/_layout': typeof FundraisersLayoutRouteWithChildren
+  '/leaderboard': typeof LeaderboardRouteWithChildren
+  '/leaderboard/_layout': typeof LeaderboardLayoutRouteWithChildren
   '/_layout/': typeof LayoutIndexRoute
   '/fundraisers/_layout/$id': typeof FundraisersLayoutIdRoute
   '/fundraisers/_layout/create': typeof FundraisersLayoutCreateRoute
   '/fundraisers/_layout/': typeof FundraisersLayoutIndexRoute
+  '/leaderboard/_layout/': typeof LeaderboardLayoutIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -214,14 +284,17 @@ export interface FileRouteTypes {
     | ''
     | '/about'
     | '/fundraisers'
+    | '/leaderboard'
     | '/'
     | '/fundraisers/$id'
     | '/fundraisers/create'
     | '/fundraisers/'
+    | '/leaderboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
     | '/fundraisers'
+    | '/leaderboard'
     | '/'
     | '/fundraisers/$id'
     | '/fundraisers/create'
@@ -231,21 +304,26 @@ export interface FileRouteTypes {
     | '/_layout/about'
     | '/fundraisers'
     | '/fundraisers/_layout'
+    | '/leaderboard'
+    | '/leaderboard/_layout'
     | '/_layout/'
     | '/fundraisers/_layout/$id'
     | '/fundraisers/_layout/create'
     | '/fundraisers/_layout/'
+    | '/leaderboard/_layout/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   FundraisersRoute: typeof FundraisersRouteWithChildren
+  LeaderboardRoute: typeof LeaderboardRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   FundraisersRoute: FundraisersRouteWithChildren,
+  LeaderboardRoute: LeaderboardRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -259,7 +337,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/_layout",
-        "/fundraisers"
+        "/fundraisers",
+        "/leaderboard"
       ]
     },
     "/_layout": {
@@ -288,6 +367,19 @@ export const routeTree = rootRoute
         "/fundraisers/_layout/"
       ]
     },
+    "/leaderboard": {
+      "filePath": "leaderboard",
+      "children": [
+        "/leaderboard/_layout"
+      ]
+    },
+    "/leaderboard/_layout": {
+      "filePath": "leaderboard/_layout.tsx",
+      "parent": "/leaderboard",
+      "children": [
+        "/leaderboard/_layout/"
+      ]
+    },
     "/_layout/": {
       "filePath": "_layout.index.tsx",
       "parent": "/_layout"
@@ -303,6 +395,10 @@ export const routeTree = rootRoute
     "/fundraisers/_layout/": {
       "filePath": "fundraisers/_layout.index.tsx",
       "parent": "/fundraisers/_layout"
+    },
+    "/leaderboard/_layout/": {
+      "filePath": "leaderboard/_layout.index.tsx",
+      "parent": "/leaderboard/_layout"
     }
   }
 }

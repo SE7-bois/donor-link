@@ -21,7 +21,7 @@ export default function Header() {
         <div className="flex justify-between items-center">
           <Link to="/" className="text-lg font-bold">Donor Link</Link>
           <div className="hidden md:flex gap-4 items-center font-bold text-secondary-element">
-            <Link to="/" activeProps={{className: "text-key-element"}} activeOptions={{exact: true}}>Leaderboard</Link>
+            <Link to="/leaderboard" activeProps={{className: "text-key-element"}} activeOptions={{exact: true}}>Leaderboard</Link>
             <Link to="/fundraisers" activeProps={{className: "text-key-element"}} activeOptions={{exact: true}}>For Donors</Link>
             <Link to="/fundraisers/create" activeProps={{className: "text-key-element"}}>Create Fundraiser</Link>
             <button className="px-4 py-2 bg-emphasized-element text-key-element font-bold rounded-md hover:bg-key-element hover:text-emphasized-element transition-colors">
@@ -44,7 +44,7 @@ export default function Header() {
         }`}>
           <nav className="flex flex-col p-4 gap-4 items-start font-bold text-secondary-element">
             <Link
-              to="/"
+              to="/leaderboard"
               activeProps={{className: "text-key-element"}}
               activeOptions={{exact: true}}
               onClick={() => setIsMobileMenuOpen(false)}

@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 type Token = {
@@ -90,7 +90,7 @@ export default function DonateCard({status: active}: {status: boolean}) {
                 value={field.state.value}
                 disabled={!active}
                 onChange={(e) => field.handleChange(e.target.value as Token["symbol"])}
-                className="w-full px-3 py-2 bg-background text-key-element rounded-md border border-secondary-element/20 focus:outline-none focus:ring-2 focus:ring-key-element/20"
+                className={`w-full px-3 py-2 bg-background text-key-element rounded-md border border-secondary-element/20 focus:outline-none focus:ring-2 focus:ring-key-element/20 appearance-none ${active ? "cursor-pointer" : ""}`}
               > 
                 {TOKENS.map((token) => (
                   <option key={token.symbol} value={token.symbol} className="text-key-element bg-emphasized-element">
