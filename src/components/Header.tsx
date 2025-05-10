@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { WalletButton } from "./wallet/WalletButton";
 
 export default function Header() {
   const [isSticky, setIsSticky] = useState(false);
@@ -24,9 +25,7 @@ export default function Header() {
             <Link to="/leaderboard" activeProps={{className: "text-key-element"}} activeOptions={{exact: true}}>Leaderboard</Link>
             <Link to="/fundraisers" activeProps={{className: "text-key-element"}} activeOptions={{exact: true}}>For Donors</Link>
             <Link to="/fundraisers/create" activeProps={{className: "text-key-element"}}>Create Fundraiser</Link>
-            <button className="px-4 py-2 bg-emphasized-element text-key-element font-bold rounded-md hover:bg-key-element hover:text-emphasized-element transition-colors">
-              Connect Wallet
-            </button>
+            <WalletButton />
           </div>
           
           <button 
@@ -65,9 +64,9 @@ export default function Header() {
             >
               Create Fundraiser
             </Link>
-            <button className="w-full px-4 py-2 bg-emphasized-element text-key-element font-bold rounded-md hover:bg-key-element hover:text-emphasized-element transition-colors">
-              Connect Wallet
-            </button>
+            <div className="w-full">
+              <WalletButton />
+            </div>
           </nav>
         </div>
       </div>
