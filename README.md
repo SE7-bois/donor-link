@@ -2,12 +2,12 @@
 An open fundraising app, powered by Solana.
 
 # Roadmap
-- [ ] Scaffold base UI for these pages:
-    - [ ] Browse Fundraisers
-    - [ ] Fundraiser Detail
-    - [ ] Fundraiser Dashboard
-    - [ ] Leaderboard
-    - [ ] Create Fundraisers
-    - [ ] User Dashboard
+- [x] Scaffold base UI for these pages:
+    - [x] Browse Fundraisers
+    - [x] Fundraiser Detail
+    - [x] Fundraiser Dashboard
+    - [x] Leaderboard
+    - [x] Create Fundraisers
+    - [x] User Dashboard
+- [ ] Connect with Convex
 - [ ] Implement connect wallet functionality
-- [ ] 
