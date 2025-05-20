@@ -9,5 +9,15 @@ An open fundraising app, powered by Solana.
     - [x] Leaderboard
     - [x] Create Fundraisers
     - [x] User Dashboard
-- [ ] Connect with Convex
+- [x] Connect with Convex
+- [ ] Refactor the UI (minimize client component)
+    - [ ] Layout.tsx
+    - [ ] Browse Fundraisers
+    - [ ] Fundraiser Detail
+    - [ ] Fundraiser Dashboard
+    - [ ] Leaderboard
+    - [ ] Create Fundraisers
+    - [ ] User Dashboard
 - [ ] Implement connect wallet functionality
+- [ ] Implement create fundraiser functionality
+- [ ] Implement donate to fundraiser functionality
