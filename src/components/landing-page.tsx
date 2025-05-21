@@ -7,7 +7,20 @@ export function LandingPage() {
   return (
     <AppShell showNav={false}>
       <div className="flex flex-col min-h-screen">
-        {/* Hero Section */}
+        <HeroSection />
+        <ValuePropositionSection />
+        <HowItWorksSection />
+        <FeaturedFundraisersSection />
+        <FinalCTASection />
+        <Footer />
+      </div>
+    </AppShell>
+  )
+}
+
+
+function HeroSection() {
+  return (
         <section className="relative py-20 md:py-28 overflow-hidden">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center space-y-4 relative z-10">
@@ -41,9 +54,12 @@ export function LandingPage() {
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[128px]"></div>
           </div>
         </section>
+  )
+}
 
-        {/* Value Proposition Section */}
-        <section className="py-16 md:py-24 bg-muted/5">
+function ValuePropositionSection() {
+  return (
+    <section className="py-16 md:py-24 bg-muted/5">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">What is Donor Link?</h2>
@@ -71,8 +87,8 @@ export function LandingPage() {
                 </div>
                 <h3 className="text-xl font-medium mb-2">Direct Impact</h3>
                 <p className="text-muted-foreground">
-                  Donations go directly to creators on the Solana blockchain, eliminating intermediaries and maximizing
-                  your contribution's impact.
+                {`Donations go directly to creators on the Solana blockchain, eliminating intermediaries and maximizing
+                  your contribution's impact.`}
                 </p>
               </div>
 
@@ -89,9 +105,12 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+  )
+}
 
-        {/* How It Works Section */}
-        <section className="py-16 md:py-24">
+export function HowItWorksSection() {
+  return (
+    <section className="py-16 md:py-24">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">How It Works</h2>
@@ -123,7 +142,7 @@ export function LandingPage() {
                 </div>
                 <h3 className="text-xl font-medium mb-2">Browse & Choose</h3>
                 <p className="text-muted-foreground">
-                  Explore fundraisers across various categories and find causes you're passionate about.
+                  {`Explore fundraisers across various categories and find causes you're passionate about.`}
                 </p>
               </div>
 
@@ -139,114 +158,101 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+  )
+}
 
-        {/* Featured Fundraisers Section */}
-        <section className="py-16 md:py-24 bg-muted/5">
-          <div className="container px-4 md:px-6">
+function FeaturedFundraisersSection() {
+
+  const fundraisers = [
+    {
+      id: 1,
+      title: "Coding Bootcamp for Underprivileged Youth",
+      category: "Education",
+      description: "Help provide coding education to underprivileged youth in urban areas, opening doors to tech careers.",
+      amountRaised: 3200,
+      totalAmount: 5000,
+      imageUrl: "/images/fundraiser1.jpg",
+    },
+    {
+      id: 2,
+      title: "Renewable Energy for Rural Schools",
+      category: "Environment",
+      description: "Installing solar panels in rural schools to provide sustainable electricity for education.",
+      amountRaised: 8500,
+      totalAmount: 10000,
+      imageUrl: "/images/fundraiser2.jpg",
+    },
+    {
+      id: 3,
+      title: "Open Source Blockchain Development Tools",
+      category: "Technology & Open Source",
+      description: "Building developer tools to make blockchain development more accessible to everyone.",
+      amountRaised: 1200,
+      totalAmount: 3000,
+      imageUrl: "/images/fundraiser3.jpg",
+    },
+  ];
+
+  return (
+    <section className="py-16 md:py-24 bg-muted/5">
+        <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">Featured Fundraisers</h2>
-              <p className="text-muted-foreground md:w-3/4 mx-auto">
-                Discover some of the impactful projects currently raising funds on Donor Link.
-              </p>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">Featured Fundraisers</h2>
+                <p className="text-muted-foreground md:w-3/4 mx-auto">
+                    Discover some of the impactful projects currently raising funds on Donor Link.
+                </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Featured Fundraiser 1 */}
-              <div className="group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm">
-                <div className="space-y-3">
-                  <div className="h-40 rounded-md bg-muted/30"></div>
-                  <div className="inline-block bg-purple-500/10 text-purple-500 px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    Education
-                  </div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-semibold tracking-tight">Coding Bootcamp for Underprivileged Youth</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      Help provide coding education to underprivileged youth in urban areas, opening doors to tech
-                      careers.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full bg-muted/50">
-                      <div className="h-full rounded-full bg-purple-500" style={{ width: "64%" }}></div>
+                {fundraisers.map((fundraiser) => (
+                    <div key={fundraiser.id} className="group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm">
+                        <div className="space-y-3">
+                            <div className="h-40 rounded-md bg-muted/30"></div>
+                            <div className="inline-block bg-purple-500/10 text-purple-500 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                {fundraiser.category}
+                            </div>
+                            <div className="space-y-1.5">
+                                <h3 className="font-semibold tracking-tight">{fundraiser.title}</h3>
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {fundraiser.description}
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="h-2 w-full rounded-full bg-muted/50">
+                                    <div className="h-full rounded-full bg-purple-500" style={{ width: `${(fundraiser.amountRaised / fundraiser.totalAmount) * 100}%` }}></div>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                    <span className="font-medium">{((fundraiser.amountRaised / fundraiser.totalAmount) * 100).toFixed(0)}% Funded</span>
+                                    <span className="text-muted-foreground">{fundraiser.amountRaised} / {fundraiser.totalAmount} </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="font-medium">64% Funded</span>
-                      <span className="text-muted-foreground">3.2 SOL / 5 SOL</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Featured Fundraiser 2 */}
-              <div className="group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm">
-                <div className="space-y-3">
-                  <div className="h-40 rounded-md bg-muted/30"></div>
-                  <div className="inline-block bg-purple-500/10 text-purple-500 px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    Environment
-                  </div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-semibold tracking-tight">Renewable Energy for Rural Schools</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      Installing solar panels in rural schools to provide sustainable electricity for education.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full bg-muted/50">
-                      <div className="h-full rounded-full bg-purple-500" style={{ width: "85%" }}></div>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="font-medium">85% Funded</span>
-                      <span className="text-muted-foreground">8.5 SOL / 10 SOL</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Featured Fundraiser 3 */}
-              <div className="group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm">
-                <div className="space-y-3">
-                  <div className="h-40 rounded-md bg-muted/30"></div>
-                  <div className="inline-block bg-purple-500/10 text-purple-500 px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    Technology & Open Source
-                  </div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-semibold tracking-tight">Open Source Blockchain Development Tools</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      Building developer tools to make blockchain development more accessible to everyone.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full bg-muted/50">
-                      <div className="h-full rounded-full bg-purple-500" style={{ width: "35%" }}></div>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="font-medium">35% Funded</span>
-                      <span className="text-muted-foreground">4.2 SOL / 12 SOL</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                ))}
             </div>
 
             <div className="flex justify-center mt-10">
-              <Button asChild variant="outline" size="lg">
-                <Link href="/browse-fundraisers">
-                  View All Fundraisers
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+                <Button asChild variant="outline" size="lg">
+                    <Link href="/browse-fundraisers">
+                        View All Fundraisers
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
             </div>
-          </div>
-        </section>
+        </div>
+    </section>
+  )
+}
 
-        {/* Final CTA Section */}
-        <section className="py-16 md:py-24">
+function FinalCTASection() {
+  return (
+    <section className="py-16 md:py-24">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Ready to Make a Difference?</h2>
               <p className="text-muted-foreground md:w-2/3 mx-auto">
-                Join Donor Link today and be part of a community that's creating positive change through transparent,
-                blockchain-powered fundraising.
+                {`Join Donor Link today and be part of a community that's creating positive change through transparent,
+                blockchain-powered fundraising.`}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mt-6">
                 <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700 text-white">
@@ -262,111 +268,135 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+  )
+}
 
-        {/* Footer */}
-        <footer className="py-10 border-t border-border/40">
-          <div className="container px-4 md:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="h-6 w-6 rounded-full bg-purple-500"></div>
-                  <span className="font-semibold text-lg">Donor Link</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Empowering change through transparent blockchain fundraising.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-4">Platform</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link
-                      href="/browse-fundraisers"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Browse Fundraisers
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/create" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Create a Fundraiser
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Leaderboard
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-4">Resources</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                      About Us
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
-                      FAQ
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Blog
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-4">Legal</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Terms of Service
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Privacy Policy
-                    </Link>
-                  </li>
-                </ul>
-
-                <div className="flex space-x-4 mt-6">
-                  <Link
-                    href="https://twitter.com"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <Twitter className="h-5 w-5" />
-                    <span className="sr-only">Twitter</span>
-                  </Link>
-                  <Link
-                    href="https://github.com"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <Github className="h-5 w-5" />
-                    <span className="sr-only">GitHub</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between items-center mt-10 pt-6 border-t border-border/20">
-              <p className="text-sm text-muted-foreground">
-                &copy; {new Date().getFullYear()} Donor Link. All rights reserved.
-              </p>
-              <p className="text-sm text-muted-foreground mt-4 md:mt-0">
-                Built on <span className="text-purple-500">Solana</span>
-              </p>
-            </div>
+function Footer() {
+  const currentYear = new Date().getFullYear();
+  const platformLinks = [
+    {
+      label: "Browse Fundraisers",
+      href: "/browse-fundraisers",
+    },
+    {
+      label: "Create a Fundraiser",
+      href: "/create",
+    },
+    {
+      label: "Leaderboard",
+      href: "/leaderboard",
+    }
+  ]
+  const resourceLinks = [
+    {
+      label: "About Us",
+      href: "/about",
+    },
+    {
+      label: "FAQ",
+      href: "/faq",
+    },
+    {
+      label: "Blog",
+      href: "/blog",
+    }
+  ]
+  const legalLinks = [
+    {
+      label: "Terms of Service",
+      href: "/terms",
+    },
+    {
+      label: "Privacy Policy",
+      href: "/privacy",
+    }
+  ]
+  const socialLinks = [
+    {
+      label: "Twitter",
+      href: "https://twitter.com",
+    },
+    {
+      label: "GitHub",
+      href: "https://github.com",
+    }
+  ]
+  return (
+    <footer className="py-10 border-t border-border/40">
+    <div className="container px-4 md:px-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <div className="h-6 w-6 rounded-full bg-purple-500"></div>
+            <span className="font-semibold text-lg">Donor Link</span>
           </div>
-        </footer>
+          <p className="text-sm text-muted-foreground">
+            Empowering change through transparent blockchain fundraising.
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-medium mb-4">Platform</h4>
+          <ul className="space-y-2 text-sm">
+            {platformLinks.map((link) => (
+              <li key={link.label}>
+                <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-medium mb-4">Resources</h4>
+          <ul className="space-y-2 text-sm">
+            {resourceLinks.map((link) => (
+              <li key={link.label}>
+                <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-medium mb-4">Legal</h4>
+          <ul className="space-y-2 text-sm">
+            {legalLinks.map((link) => (
+              <li key={link.label}>
+                <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-medium mb-4">Social</h4>
+          <ul className="space-y-2 text-sm">
+            {socialLinks.map((link) => (
+              <li key={link.label}>
+                <Link href={link.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                  {link.label}
+                  </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </AppShell>
+
+      <div className="flex flex-col md:flex-row justify-between items-center mt-10 pt-6 border-t border-border/20">
+        <p className="text-sm text-muted-foreground">
+          &copy; {new Date().getFullYear()} Donor Link. All rights reserved.
+        </p>
+        <p className="text-sm text-muted-foreground mt-4 md:mt-0">
+          Built on <span className="text-purple-500">Solana</span>
+        </p>
+      </div>
+    </div>
+  </footer>
   )
 }
