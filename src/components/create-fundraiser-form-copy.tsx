@@ -5,9 +5,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { categories } from "~/data/fundraisers";
 import { useState, useRef, useEffect } from "react";
-import { FileImage, Plus, Trash2, Upload, CalendarIcon } from "lucide-react";
+import { FileImage, Plus, Trash2, Upload, CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { format } from "date-fns";
+import { createFundraiser, type CreateFundraiserResponse } from "~/app/fundraisers/actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button"
 import {
@@ -75,6 +78,8 @@ export function CreateFundraiserForm() {
     },
   });
 
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -153,33 +158,66 @@ export function CreateFundraiserForm() {
   };
   // --- Drag and Drop Handlers & File Processing --- END ---
   
-  const onFormSubmit = (data: FormInputSchema) => {
-    // Transform the data using the full schema with transforms
-    const transformedData = formSchema.parse(data);
+  const onFormSubmit = async (data: FormInputSchema) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Transform the data using the full schema with transforms
+      const transformedData = formSchema.parse(data);
 
-    const formData = new FormData();
-    Object.keys(transformedData).forEach(keyStr => {
-      const key = keyStr as keyof FormSchema;
-      if (key === "media") {
-        if (transformedData.media && transformedData.media.length > 0) {
-          transformedData.media.forEach(file => formData.append("media", file));
+      const formData = new FormData();
+      Object.keys(transformedData).forEach(keyStr => {
+        const key = keyStr as keyof FormSchema;
+        if (key === "media") {
+          if (transformedData.media && transformedData.media.length > 0) {
+            transformedData.media.forEach(file => formData.append("media", file));
+          }
+        } else if (transformedData[key] instanceof Date) {
+          formData.append(key, (transformedData[key] as Date).toISOString());
+        } else if (transformedData[key] !== undefined && transformedData[key] !== null) {
+          formData.append(key, String(transformedData[key]));
         }
-      } else if (transformedData[key] instanceof Date) {
-        formData.append(key, (transformedData[key] as Date).toISOString());
-      } else if (transformedData[key] !== undefined && transformedData[key] !== null) {
-        formData.append(key, String(transformedData[key]));
-      }
-    });
+      });
 
-    for (const entry of formData.entries()) {
-      const [key, value] = entry;
-      if (value instanceof File) {
-        console.log(`${key}: [File] name="${value.name}", size=${value.size}, type=${value.type}`);
+      // Call the server action with the form data
+      const response: CreateFundraiserResponse = await createFundraiser(formData);
+
+      if (response.success) {
+        toast.success(response.message, {
+          description: "Your fundraiser has been created successfully."
+        });
+
+        // Redirect to the fundraiser page if we have an ID
+        if (response.fundraiserId) {
+          router.push(`/fundraisers/${response.fundraiserId}`);
+        } else {
+          router.push("/fundraisers");
+        }
       } else {
-        console.log(`${key}: ${value}`);
+        // Handle validation errors from the server
+        if (response.errors) {
+          // Set errors in the form
+          Object.keys(response.errors).forEach(field => {
+            const errorMessage = response.errors?.[field]?.[0] ?? "Invalid field";
+            form.setError(field as keyof FormInputSchema, { 
+              type: "server", 
+              message: errorMessage
+            });
+          });
+        }
+
+        toast.error("Error creating fundraiser", {
+          description: response.message
+        });
       }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Something went wrong", {
+        description: "Please try again later."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    alert("Form submitted! Check browser console for details.");
   };
 
   // Cleanup object URLs on component unmount
@@ -216,7 +254,7 @@ export function CreateFundraiserForm() {
         };
         
         // Call our submit handler with the combined data
-        onFormSubmit(combinedData);
+        void onFormSubmit(combinedData);
       })} className="space-y-8">
         <h2 className="text-2xl font-bold">Campaign Basics</h2>
         <FormField
@@ -461,10 +499,26 @@ export function CreateFundraiserForm() {
         )} />
         
         <div className="flex space-x-4">
-          <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white">
-            Launch Campaign
+          <Button 
+            type="submit" 
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Launch Campaign"
+            )}
           </Button>
-          <Button type="button" variant="outline" onClick={() => console.log('Save as Draft clicked. Form data:', form.getValues())}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => console.log('Save as Draft clicked. Form data:', form.getValues())}
+            disabled={isSubmitting}
+          >
             Save as Draft
           </Button>
         </div>
