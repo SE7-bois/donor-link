@@ -387,7 +387,7 @@ export function Dashboard() {
                       </div>
                       <h3 className="text-xl font-medium">No donations found</h3>
                       <p className="text-muted-foreground mt-2 max-w-md">
-                        We couldn't find any donations matching your search criteria. Try adjusting your filters.
+                        {`We couldn't find any donations matching your search criteria. Try adjusting your filters.`}
                       </p>
                       <Button
                         variant="outline"
@@ -405,7 +405,7 @@ export function Dashboard() {
                       <div className="rounded-full bg-muted/30 p-6 mb-4">
                         <Trophy className="h-10 w-10 text-muted-foreground/50" />
                       </div>
-                      <h3 className="text-xl font-medium">You haven't made any donations yet</h3>
+                      <h3 className="text-xl font-medium">{`You haven't made any donations yet`}</h3>
                       <p className="text-muted-foreground mt-2 max-w-md">
                         Explore fundraisers and make an impact! Your donations will appear here.
                       </p>
@@ -546,7 +546,7 @@ export function Dashboard() {
                       </div>
                       <h3 className="text-xl font-medium">No fundraisers found</h3>
                       <p className="text-muted-foreground mt-2 max-w-md">
-                        We couldn't find any fundraisers matching your search criteria. Try adjusting your filters.
+                        {`We couldn't find any fundraisers matching your search criteria. Try adjusting your filters.`}
                       </p>
                       <Button
                         variant="outline"
@@ -564,7 +564,7 @@ export function Dashboard() {
                       <div className="rounded-full bg-muted/30 p-6 mb-4">
                         <Plus className="h-10 w-10 text-muted-foreground/50" />
                       </div>
-                      <h3 className="text-xl font-medium">You haven't created any fundraisers yet</h3>
+                      <h3 className="text-xl font-medium">{`You haven't created any fundraisers yet`}</h3>
                       <p className="text-muted-foreground mt-2 max-w-md">
                         Ready to start a campaign? Create your first fundraiser and begin making an impact.
                       </p>

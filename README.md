@@ -11,12 +11,12 @@ An open fundraising app, powered by Solana.
     - [x] User Dashboard
 - [x] Connect with Convex
 - [ ] Refactor the UI (minimize client component)
-    - [ ] Layout.tsx
-    - [ ] Browse Fundraisers
+    - [x] Layout.tsx
+    - [x] Browse Fundraisers
     - [ ] Fundraiser Detail
     - [ ] Fundraiser Dashboard
     - [ ] Leaderboard
-    - [ ] Create Fundraisers
+    - [x] Create Fundraisers
     - [ ] User Dashboard
 - [ ] Implement connect wallet functionality
 - [ ] Implement create fundraiser functionality

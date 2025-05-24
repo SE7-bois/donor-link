@@ -16,29 +16,7 @@ import { Label } from "~/components/ui/label"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { cn } from "~/lib/utils"
 import { format } from "date-fns"
-
-// Category types
-type FundraiserCategory =
-  | "Education"
-  | "Health & Medical"
-  | "Environment"
-  | "Community Projects"
-  | "Arts & Creative"
-  | "Technology & Open Source"
-  | "Emergency Relief"
-  | "Others"
-
-// Available categories for selection
-const categories: FundraiserCategory[] = [
-  "Education",
-  "Health & Medical",
-  "Environment",
-  "Community Projects",
-  "Arts & Creative",
-  "Technology & Open Source",
-  "Emergency Relief",
-  "Others",
-]
+import { categories, type FundraiserCategory } from "~/data/fundraisers"
 
 // Media item type
 interface MediaItem {
@@ -186,7 +164,7 @@ export function CreateFundraiserForm() {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Redirect to fundraiser page (in a real app, would redirect to the newly created fundraiser)
-      router.push("/browse-fundraisers")
+      router.push("/fundraisers")
     } catch (error) {
       console.error("Error creating fundraiser:", error)
       setIsSubmitting(false)
