@@ -37,7 +37,7 @@ export async function createFundraiser(formData: FormData): Promise<CreateFundra
   try {
     // Extract form data
     const rawFormData: Record<string, string | string[]> = {};
-    
+
     // Process regular form fields
     for (const [key, value] of formData.entries()) {
       // Skip if it's a file (we'll handle those separately)
@@ -56,10 +56,10 @@ export async function createFundraiser(formData: FormData): Promise<CreateFundra
         }
       }
     }
-    
+
     // Validate the form data
     const validatedData = serverFormSchema.parse(rawFormData);
-    
+
     // Process media files
     const mediaFiles: File[] = [];
     for (const file of formData.getAll("media") as File[]) {
@@ -70,25 +70,25 @@ export async function createFundraiser(formData: FormData): Promise<CreateFundra
         }
       }
     }
-    
+
     // TODO: Process and store media files
     // This would involve:
     // 1. Uploading files to storage (e.g., S3, Cloudinary, etc.)
     // 2. Getting back URLs or IDs for the uploaded files
-    
+
     // TODO: Store fundraiser data in database
     console.log("Creating fundraiser with data:", validatedData);
     console.log("Media files:", mediaFiles.map(f => ({ name: f.name, type: f.type, size: f.size })));
-    
-    // Simulate fundraiser creation with a delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
+    // Simulate fundraiser creation with a delay of 3 seconds
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     // Mock fundraiser ID (in production this would come from your database)
-    const fundraiserId = `fr-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
+    const fundraiserId = `${Math.floor(Math.random() * 100) % 24}`;
+
     // Revalidate the fundraisers page to show the new fundraiser
     revalidatePath("/fundraisers");
-    
+
     return {
       success: true,
       message: "Fundraiser created successfully!",
@@ -96,24 +96,24 @@ export async function createFundraiser(formData: FormData): Promise<CreateFundra
     };
   } catch (error) {
     console.error("Error creating fundraiser:", error);
-    
+
     // Handle validation errors
     if (error instanceof z.ZodError) {
       const errors: Record<string, string[]> = {};
-      
+
       for (const issue of error.errors) {
         const path = issue.path.join(".");
         errors[path] ??= [];
         errors[path].push(issue.message);
       }
-      
+
       return {
         success: false,
         message: "Validation failed",
         errors
       };
     }
-    
+
     // Handle other errors
     return {
       success: false,
@@ -121,4 +121,3 @@ export async function createFundraiser(formData: FormData): Promise<CreateFundra
     };
   }
 }
-
