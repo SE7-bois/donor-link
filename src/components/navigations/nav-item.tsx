@@ -1,13 +1,15 @@
 "use client";
 
-import { BarChart3, Compass, PlusCircle } from "lucide-react";
+import { BarChart3, Compass, PlusCircle, User } from "lucide-react";
 import { cn } from "~/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import { useSolanaWallet } from "~/lib/hooks/use-solana-wallet";
 
 export default function NavItem() {
     const pathname = usePathname();
+    const { connected } = useSolanaWallet();
+
     const navItems = [
         {
             name: "Browse Fundraisers",
@@ -35,6 +37,16 @@ export default function NavItem() {
         },
     ];
 
+    // Profile link only shows when connected
+    if (connected) {
+        navItems.push({
+            name: "Profile",
+            href: "/profile",
+            icon: User,
+            active: pathname === "/profile",
+        });
+    }
+
     return (
         <nav className="flex items-center space-x-8">
             {pathname !== "/" && navItems.map((item) => (
@@ -52,5 +64,4 @@ export default function NavItem() {
             ))}
         </nav>
     )
-
 }

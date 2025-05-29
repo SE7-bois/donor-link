@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "~/components/ui/sonner";
 import Navbar from "~/components/navigations/navbar";
 import { cn } from "~/lib/utils";
+import SolanaProvider from "~/components/provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,11 +25,13 @@ export default function RootLayout({
         "flex flex-col antialiased mx-[2%]",
         "bg-background"
       )}>
-        <Navbar />
-        <main>
-          {children}
-        </main>
-        <Toaster />
+        <SolanaProvider>
+          <Navbar />
+          <main>
+            {children}
+          </main>
+          <Toaster />
+        </SolanaProvider>
       </body>
     </html>
   );
