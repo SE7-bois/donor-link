@@ -23,7 +23,7 @@ function HeroSection() {
           <div className="space-y-2">
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">
               Support Causes You Believe In, <br className="hidden sm:inline" />
-              Transparently on Solan
+              Transparently on Solana
             </h1>
             <p className="text-xl text-muted-foreground md:w-3/4 mx-auto">
               Donor Link connects passionate supporters with impactful projects through secure, transparent
