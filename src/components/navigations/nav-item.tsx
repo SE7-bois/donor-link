@@ -5,6 +5,7 @@ import { cn } from "~/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSolanaWallet } from "~/lib/hooks/use-solana-wallet";
+import { toast } from "sonner";
 
 export default function NavItem() {
     const pathname = usePathname();
@@ -18,18 +19,6 @@ export default function NavItem() {
             active: pathname === "/fundraisers",
         },
         {
-            name: "Create Fundraiser",
-            href: "/create",
-            icon: PlusCircle,
-            active: pathname === "/create",
-        },
-        {
-            name: "Dashboard",
-            href: "/dashboard",
-            icon: BarChart3,
-            active: pathname === "/dashboard",
-        },
-        {
             name: "Leaderboard",
             href: "/leaderboard",
             icon: BarChart3,
@@ -39,6 +28,12 @@ export default function NavItem() {
 
     // Profile link only shows when connected
     if (connected) {
+        navItems.push({
+            name: "Create Fundraiser",
+            href: "/create",
+            icon: PlusCircle,
+            active: pathname === "/create",
+        });
         navItems.push({
             name: "Profile",
             href: "/profile",
@@ -53,6 +48,12 @@ export default function NavItem() {
                 <Link
                     key={item.href}
                     href={item.href}
+                    onClick={(e) => {
+                        if (!connected && (item.href === "/profile" || item.href === "/create")) {
+                            e.preventDefault();
+                            toast.error("Please connect your wallet first.");
+                        }
+                    }}
                     className={cn(
                         "flex items-center text-sm font-medium transition-colors hover:text-foreground/80",
                         item.active ? "text-purple-500" : "text-foreground/60",
