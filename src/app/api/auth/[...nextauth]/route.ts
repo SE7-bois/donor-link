@@ -40,11 +40,23 @@ const handler = NextAuth({
 
           // More flexible domain validation for development and production
           const nextAuthUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+          const vercelUrl = process.env.VERCEL_URL;
           const allowedDomains = [
             new URL(nextAuthUrl).host,
             "localhost:3000", // for development
             "127.0.0.1:3000", // for development
+            "www.kecil.dev", // production domain
+            "kecil.dev", // production domain without www
+            ...(vercelUrl ? [vercelUrl] : []), // Add Vercel URL if available
           ];
+
+          // Log environment info for debugging
+          console.log("🌍 Environment info:", {
+            NODE_ENV: process.env.NODE_ENV,
+            NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+            VERCEL_URL: process.env.VERCEL_URL,
+            isProduction: process.env.NODE_ENV === "production"
+          });
 
           console.log("🌐 Domain validation:", {
             messageDomain: signinMessage.domain,
@@ -58,7 +70,7 @@ const handler = NextAuth({
               received: signinMessage.domain,
               expected: allowedDomains
             });
-            return null;
+            throw new Error(`Domain validation failed. Received: ${signinMessage.domain}, Expected one of: ${allowedDomains.join(', ')}`);
           }
 
           console.log("🎫 Getting CSRF token...");
@@ -76,7 +88,7 @@ const handler = NextAuth({
               received: signinMessage.nonce,
               expected: csrfToken
             });
-            return null;
+            throw new Error(`CSRF token validation failed. Received: ${signinMessage.nonce?.substring(0, 8)}..., Expected: ${csrfToken?.substring(0, 8)}...`);
           }
 
           console.log("✍️ Validating signature...");
@@ -91,7 +103,7 @@ const handler = NextAuth({
               message: signinMessage.prepare(),
               publicKey: signinMessage.publicKey
             });
-            return null;
+            throw new Error(`Signature validation failed for public key: ${signinMessage.publicKey}`);
           }
 
           console.log("✅ Authentication successful for:", signinMessage.publicKey);
@@ -147,7 +159,7 @@ const handler = NextAuth({
       return token;
     },
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: true, // Always enable debug for now
   logger: {
     error(code, metadata) {
       console.error("🚨 NextAuth Error:", { code, metadata });
@@ -158,6 +170,9 @@ const handler = NextAuth({
     debug(code, metadata) {
       console.log("🔍 NextAuth Debug:", { code, metadata });
     },
+  },
+  pages: {
+    error: '/auth/error', // Optional: custom error page
   },
 });
 
