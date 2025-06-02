@@ -3,7 +3,6 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { useCallback, useEffect, useState } from "react";
 import { getSolanaBalance } from "../solana-utils";
 import { toast } from "sonner";
-import { WalletReadyState } from "@solana/wallet-adapter-base";
 import type { WalletName } from "@solana/wallet-adapter-base";
 
 export function useSolanaWallet() {
@@ -100,23 +99,6 @@ export function useSolanaWallet() {
     }
   }, [select]);
 
-  // Helper to select Phantom wallet specifically
-  const selectPhantom = useCallback(() => {
-    const phantomWallet = wallets.find(w =>
-      w.adapter.name === 'Phantom' &&
-      w.adapter.readyState === WalletReadyState.Installed
-    );
-
-    if (phantomWallet) {
-      selectWallet(phantomWallet.adapter.name);
-    } else {
-      setError("Phantom wallet not found or not installed");
-      toast.error("Wallet Error", {
-        description: "Phantom wallet not found or not installed",
-      });
-    }
-  }, [wallets, selectWallet]);
-
   return {
     publicKey,
     connected,
@@ -131,6 +113,5 @@ export function useSolanaWallet() {
     error,
     wallets,
     selectWallet,
-    selectPhantom,
   };
 } 

@@ -13,9 +13,15 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy",
+    "dev:parallel": "concurrently \"npm run convex:dev\" \"npm run dev\" --names \"convex,next\" --prefix-colors \"blue,green\"",
+    "dev:full": "concurrently \"npx convex dev\" \"next dev\" --names \"convex,next\" --prefix-colors \"blue,green\" --kill-others"
   },
   "dependencies": {
+    "@auth/core": "0.37.0",
+    "@convex-dev/auth": "^0.0.86",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-dropdown-menu": "^2.1.14",
     "@radix-ui/react-label": "^2.1.6",
@@ -34,12 +40,14 @@
     "@solana/wallet-adapter-wallets": "^0.19.36",
     "@solana/web3.js": "^1.98.2",
     "@t3-oss/env-nextjs": "^0.12.0",
+    "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.24.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.511.0",
     "next": "^15.3.2",
+    "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
     "react": "^19.1.0",
     "react-day-picker": "^8.10.1",
@@ -47,6 +55,7 @@
     "react-hook-form": "^7.56.4",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",
+    "tweetnacl": "^1.0.3",
     "zod": "^3.25.7"
   },
   "devDependencies": {
@@ -55,6 +64,7 @@
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.3.2",
     "postcss": "^8.4.35",

@@ -4,15 +4,28 @@ import { Wallet, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useSolanaWallet } from "~/lib/hooks/use-solana-wallet";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { truncateAddress } from "~/lib/utils";
 import { formatSolAmount } from "~/lib/solana-utils";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
+import { SigninMessage } from "~/utils/SigninMessage";
+import bs58 from "bs58";
+import { useMutation } from "convex/react";
+import { api } from "convex/_generated/api";
 
 export default function ConnectWalletButton() {
-    const { connected, publicKey, disconnect, connecting, disconnecting, wallet, error, balance } = useSolanaWallet();
+    // Use standard wallet adapter for signMessage and core wallet functionality
+    const { connected, publicKey, disconnect, connecting, disconnecting, wallet, signMessage } = useWallet();
+    // Use custom hook for balance and error handling
+    const { error, balance } = useSolanaWallet();
     const { setVisible } = useWalletModal();
+    const { data: session, status } = useSession();
+
+    // Convex mutations
+    const createOrUpdateUser = useMutation(api.users.createOrUpdateUser);
 
     // Display any wallet errors
     useEffect(() => {
@@ -24,12 +37,63 @@ export default function ConnectWalletButton() {
         }
     }, [error]);
 
-    // Log wallet status for debugging
+    // Handle wallet connection and authentication
     useEffect(() => {
-        if (wallet) {
-            console.log("Connected wallet:", wallet.adapter.name);
+        if (wallet && connected && !session && status !== "loading") {
+            handleSignIn();
         }
-    }, [wallet]);
+    }, [wallet, connected, session, status]);
+
+    const handleSignIn = async () => {
+        try {
+            if (!publicKey || !signMessage) {
+                toast.error("Wallet not ready for signing");
+                return;
+            }
+
+            const csrf = await getCsrfToken();
+            if (!csrf) {
+                toast.error("Could not get CSRF token");
+                return;
+            }
+
+            const message = new SigninMessage({
+                domain: window.location.host,
+                publicKey: publicKey.toBase58(),
+                statement: `Sign this message to sign in to the app.`,
+                nonce: csrf,
+            });
+
+            const data = new TextEncoder().encode(message.prepare());
+            const signature = await signMessage(data);
+            const serializedSignature = bs58.encode(signature);
+
+            const result = await signIn("credentials", {
+                message: JSON.stringify(message),
+                redirect: false,
+                signature: serializedSignature,
+            });
+
+            if (result?.ok) {
+                // Store user in Convex after successful authentication
+                try {
+                    await createOrUpdateUser({
+                        wallet_address: publicKey.toBase58(),
+                        nonce: csrf,
+                    });
+                    toast.success("Wallet authenticated and user saved!");
+                } catch (convexError) {
+                    console.error("Error saving user to Convex:", convexError);
+                    toast.error("Authentication successful, but failed to save user data");
+                }
+            } else {
+                toast.error("Authentication failed");
+            }
+        } catch (err) {
+            console.error("Sign-in error:", err);
+            toast.error("Failed to sign in with wallet");
+        }
+    };
 
     const handleConnect = () => {
         try {
@@ -37,6 +101,16 @@ export default function ConnectWalletButton() {
             console.log("Opening wallet selection modal");
         } catch (err) {
             console.error("Error opening wallet modal:", err);
+        }
+    };
+
+    const handleDisconnect = async () => {
+        try {
+            await signOut({ redirect: false });
+            disconnect();
+            toast.success("Wallet disconnected");
+        } catch (err) {
+            console.error("Error disconnecting:", err);
         }
     };
 
@@ -77,8 +151,15 @@ export default function ConnectWalletButton() {
                         <span>{wallet.adapter.name}</span>
                     </DropdownMenuItem>
                 )}
+                <DropdownMenuItem className="cursor-pointer flex justify-between">
+                    <span className="flex items-center">
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Auth Status
+                    </span>
+                    <span>{session ? "Authenticated" : "Not authenticated"}</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={disconnect} disabled={disconnecting}>
+                <DropdownMenuItem className="cursor-pointer" onClick={handleDisconnect} disabled={disconnecting}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>{disconnecting ? "Disconnecting..." : "Disconnect"}</span>
                 </DropdownMenuItem>
