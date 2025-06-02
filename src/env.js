@@ -7,10 +7,10 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    NODE_ENV: z.enum(["development", "test", "production"]),
-    CONVEX_DEPLOYMENT: z.string(),
-    NEXTAUTH_URL: z.string(),
-    NEXTAUTH_SECRET: z.string(),
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    CONVEX_DEPLOYMENT: z.string().optional(),
+    NEXTAUTH_URL: z.string().optional(),
+    NEXTAUTH_SECRET: z.string().optional(),
   },
 
   /**
@@ -21,8 +21,8 @@ export const env = createEnv({
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
     NEXT_PUBLIC_CONVEX_URL: z.string(),
-    NEXT_PUBLIC_SOLANA_RPC_URL: z.string(),
-    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: z.string(),
+    NEXT_PUBLIC_SOLANA_RPC_URL: z.string().default("https://api.devnet.solana.com"),
+    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: z.string().optional(),
   },
 
   /**

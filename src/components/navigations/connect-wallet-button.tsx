@@ -9,7 +9,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { truncateAddress } from "~/lib/utils";
 import { formatSolAmount } from "~/lib/solana-utils";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
 import { SigninMessage } from "~/utils/SigninMessage";
 import bs58 from "bs58";
@@ -37,25 +37,27 @@ export default function ConnectWalletButton() {
         }
     }, [error]);
 
-    // Handle wallet connection and authentication
-    useEffect(() => {
-        if (wallet && connected && !session && status !== "loading") {
-            handleSignIn();
-        }
-    }, [wallet, connected, session, status]);
+    const handleSignIn = useCallback(async () => {
+        console.log("🔐 Starting sign-in process...");
+        console.log("📝 Session status:", status);
+        console.log("🔗 Connected:", connected);
+        console.log("👛 PublicKey:", publicKey?.toBase58());
 
-    const handleSignIn = async () => {
         try {
             if (!publicKey || !signMessage) {
+                console.error("❌ Wallet not ready for signing");
                 toast.error("Wallet not ready for signing");
                 return;
             }
 
+            console.log("🎫 Getting CSRF token...");
             const csrf = await getCsrfToken();
             if (!csrf) {
+                console.error("❌ Could not get CSRF token");
                 toast.error("Could not get CSRF token");
                 return;
             }
+            console.log("✅ CSRF token received:", csrf);
 
             const message = new SigninMessage({
                 domain: window.location.host,
@@ -64,41 +66,68 @@ export default function ConnectWalletButton() {
                 nonce: csrf,
             });
 
+            console.log("📄 Message created:", message);
+            console.log("📝 Message to sign:", message.prepare());
+
             const data = new TextEncoder().encode(message.prepare());
+            console.log("✍️ Requesting signature...");
+
             const signature = await signMessage(data);
             const serializedSignature = bs58.encode(signature);
+            console.log("✅ Signature received:", serializedSignature);
 
+            console.log("🔐 Attempting NextAuth sign-in...");
             const result = await signIn("credentials", {
                 message: JSON.stringify(message),
                 redirect: false,
                 signature: serializedSignature,
             });
 
+            console.log("📋 NextAuth result:", result);
+
             if (result?.ok) {
+                console.log("✅ NextAuth sign-in successful");
                 // Store user in Convex after successful authentication
                 try {
+                    console.log("💾 Saving user to Convex...");
                     await createOrUpdateUser({
                         wallet_address: publicKey.toBase58(),
                         nonce: csrf,
                     });
+                    console.log("✅ User saved to Convex successfully");
                     toast.success("Wallet authenticated and user saved!");
                 } catch (convexError) {
-                    console.error("Error saving user to Convex:", convexError);
+                    console.error("❌ Error saving user to Convex:", convexError);
                     toast.error("Authentication successful, but failed to save user data");
                 }
             } else {
-                toast.error("Authentication failed");
+                console.error("❌ NextAuth sign-in failed:", result);
+                toast.error(`Authentication failed: ${result?.error || 'Unknown error'}`);
             }
         } catch (err) {
-            console.error("Sign-in error:", err);
-            toast.error("Failed to sign in with wallet");
+            console.error("💥 Sign-in error:", err);
+            toast.error(`Failed to sign in with wallet: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
-    };
+    }, [publicKey, signMessage, createOrUpdateUser, status, connected]);
+
+    // Handle wallet connection and authentication
+    useEffect(() => {
+        console.log("🔄 Auth effect triggered:");
+        console.log("  - Wallet:", wallet?.adapter?.name);
+        console.log("  - Connected:", connected);
+        console.log("  - Session:", !!session);
+        console.log("  - Status:", status);
+
+        if (wallet && connected && !session && status !== "loading") {
+            console.log("🚀 Triggering handleSignIn...");
+            handleSignIn();
+        }
+    }, [wallet, connected, session, status, handleSignIn]);
 
     const handleConnect = () => {
         try {
+            console.log("🔗 Opening wallet selection modal");
             setVisible(true);
-            console.log("Opening wallet selection modal");
         } catch (err) {
             console.error("Error opening wallet modal:", err);
         }
@@ -106,6 +135,7 @@ export default function ConnectWalletButton() {
 
     const handleDisconnect = async () => {
         try {
+            console.log("📤 Disconnecting wallet and signing out...");
             await signOut({ redirect: false });
             disconnect();
             toast.success("Wallet disconnected");
@@ -156,7 +186,16 @@ export default function ConnectWalletButton() {
                         <Wallet className="mr-2 h-4 w-4" />
                         Auth Status
                     </span>
-                    <span>{session ? "Authenticated" : "Not authenticated"}</span>
+                    <span className={session ? "text-green-600" : "text-red-600"}>
+                        {session ? "Authenticated" : "Not authenticated"}
+                    </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer flex justify-between">
+                    <span className="flex items-center">
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Session Status
+                    </span>
+                    <span>{status}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer" onClick={handleDisconnect} disabled={disconnecting}>
