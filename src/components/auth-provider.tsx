@@ -5,7 +5,9 @@ import { type ReactNode } from "react";
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider
+      baseUrl={process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined}
+    >
       {children}
     </SessionProvider>
   );

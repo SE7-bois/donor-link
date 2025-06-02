@@ -4,6 +4,10 @@ import { getCsrfToken } from "next-auth/react";
 import { SigninMessage } from "~/utils/SigninMessage";
 
 const handler = NextAuth({
+  // Force the correct base URL for local development
+  ...(process.env.NODE_ENV === "development" && {
+    url: process.env.NEXTAUTH_URL || "http://localhost:3000",
+  }),
   providers: [
     CredentialsProvider({
       name: "Solana",
@@ -55,7 +59,9 @@ const handler = NextAuth({
             NODE_ENV: process.env.NODE_ENV,
             NEXTAUTH_URL: process.env.NEXTAUTH_URL,
             VERCEL_URL: process.env.VERCEL_URL,
-            isProduction: process.env.NODE_ENV === "production"
+            isProduction: process.env.NODE_ENV === "production",
+            reqHost: req?.headers?.host,
+            reqOrigin: req?.headers?.origin,
           });
 
           console.log("🌐 Domain validation:", {
