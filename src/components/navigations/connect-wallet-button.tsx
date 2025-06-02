@@ -102,7 +102,27 @@ export default function ConnectWalletButton() {
                 }
             } else {
                 console.error("❌ NextAuth sign-in failed:", result);
-                toast.error(`Authentication failed: ${result?.error || 'Unknown error'}`);
+                console.error("🔍 Detailed error information:", {
+                    ok: result?.ok,
+                    error: result?.error,
+                    status: result?.status,
+                    url: result?.url,
+                    fullResult: result
+                });
+
+                // Try to make a direct call to check what's happening
+                try {
+                    const response = await fetch('/api/auth/providers');
+                    const providers = await response.json();
+                    console.log("🔍 Available providers:", providers);
+                } catch (providerError) {
+                    console.error("❌ Error checking providers:", providerError);
+                }
+
+                // Show detailed error
+                const errorMessage = result?.error || 'Unknown error';
+                const statusInfo = result?.status ? ` (Status: ${result.status})` : '';
+                toast.error(`Authentication failed: ${errorMessage}${statusInfo}`);
             }
         } catch (err) {
             console.error("💥 Sign-in error:", err);
