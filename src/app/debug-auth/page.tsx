@@ -36,8 +36,8 @@ export default function DebugAuthPage() {
             <div>
               <strong>Status:</strong>
               <span className={`ml-2 px-2 py-1 rounded text-xs ${status === "authenticated" ? "bg-green-100 text-green-800" :
-                  status === "unauthenticated" ? "bg-red-100 text-red-800" :
-                    "bg-yellow-100 text-yellow-800"
+                status === "unauthenticated" ? "bg-red-100 text-red-800" :
+                  "bg-yellow-100 text-yellow-800"
                 }`}>
                 {status}
               </span>
