@@ -3,10 +3,47 @@
 import { useSession } from "next-auth/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import ConnectWalletButton from "~/components/navigations/connect-wallet-button";
+import { SigninMessage } from "~/utils/SigninMessage";
+import bs58 from "bs58";
+import { useState } from "react";
 
 export default function DebugAuthPage() {
   const { data: session, status } = useSession();
-  const { connected, publicKey, wallet } = useWallet();
+  const { connected, publicKey, wallet, signMessage } = useWallet();
+  const [testResult, setTestResult] = useState<string>("");
+
+  const testSignature = async () => {
+    if (!publicKey || !signMessage) {
+      setTestResult("❌ Wallet not connected or can't sign");
+      return;
+    }
+
+    try {
+      const testMessage = new SigninMessage({
+        domain: window.location.host,
+        publicKey: publicKey.toBase58(),
+        statement: "Test message",
+        nonce: "test-nonce-123",
+      });
+
+      const messageToSign = testMessage.prepare();
+      console.log("🧪 Test message:", messageToSign);
+
+      const data = new TextEncoder().encode(messageToSign);
+      const signature = await signMessage(data);
+      const serializedSignature = bs58.encode(signature);
+
+      console.log("🧪 Test signature:", serializedSignature);
+
+      const isValid = await testMessage.validate(serializedSignature);
+      console.log("🧪 Test validation result:", isValid);
+
+      setTestResult(`✅ Signature test ${isValid ? "PASSED" : "FAILED"}`);
+    } catch (error) {
+      console.error("🧪 Test error:", error);
+      setTestResult(`❌ Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   return (
     <div className="container mx-auto p-8 max-w-4xl">
@@ -25,6 +62,9 @@ export default function DebugAuthPage() {
             </div>
             <div>
               <strong>Public Key:</strong> {publicKey?.toBase58() || "None"}
+            </div>
+            <div>
+              <strong>Can Sign:</strong> {signMessage ? "✅ Yes" : "❌ No"}
             </div>
           </div>
         </div>
@@ -57,6 +97,25 @@ export default function DebugAuthPage() {
           )}
         </div>
 
+        {/* Signature Test */}
+        <div className="border rounded-lg p-4">
+          <h2 className="text-xl font-semibold mb-4">Signature Test</h2>
+          <div className="space-y-4">
+            <button
+              onClick={testSignature}
+              disabled={!connected || !publicKey || !signMessage}
+              className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+            >
+              Test Signature Validation
+            </button>
+            {testResult && (
+              <div className="p-3 bg-gray-50 rounded">
+                <strong>Test Result:</strong> {testResult}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Connect Wallet Button */}
         <div className="border rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-4">Actions</h2>
@@ -69,6 +128,7 @@ export default function DebugAuthPage() {
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Open browser developer tools (F12)</li>
             <li>Go to the Console tab</li>
+            <li>Click "Test Signature Validation" to verify crypto works</li>
             <li>Click "Connect Wallet" and choose a wallet</li>
             <li>Watch the console for detailed authentication logs</li>
             <li>Check if the session status changes to "authenticated"</li>

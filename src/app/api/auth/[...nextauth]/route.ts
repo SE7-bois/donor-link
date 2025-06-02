@@ -35,9 +35,10 @@ const handler = NextAuth({
             domain: signinMessage.domain,
             publicKey: signinMessage.publicKey,
             nonce: signinMessage.nonce?.substring(0, 8) + "...",
+            statement: signinMessage.statement,
           });
 
-          // More flexible domain validation for development
+          // More flexible domain validation for development and production
           const nextAuthUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
           const allowedDomains = [
             new URL(nextAuthUrl).host,
@@ -48,33 +49,49 @@ const handler = NextAuth({
           console.log("🌐 Domain validation:", {
             messageDomain: signinMessage.domain,
             allowedDomains,
+            nextAuthUrl,
             isValid: allowedDomains.includes(signinMessage.domain)
           });
 
           if (!allowedDomains.includes(signinMessage.domain)) {
-            console.error("❌ Domain validation failed");
+            console.error("❌ Domain validation failed", {
+              received: signinMessage.domain,
+              expected: allowedDomains
+            });
             return null;
           }
 
+          console.log("🎫 Getting CSRF token...");
           const csrfToken = await getCsrfToken({ req: { ...req, body: null } });
           console.log("🎫 CSRF token validation:", {
             received: signinMessage.nonce?.substring(0, 8) + "...",
             expected: csrfToken?.substring(0, 8) + "...",
-            matches: signinMessage.nonce === csrfToken
+            matches: signinMessage.nonce === csrfToken,
+            receivedLength: signinMessage.nonce?.length,
+            expectedLength: csrfToken?.length
           });
 
           if (signinMessage.nonce !== csrfToken) {
-            console.error("❌ CSRF token validation failed");
+            console.error("❌ CSRF token validation failed", {
+              received: signinMessage.nonce,
+              expected: csrfToken
+            });
             return null;
           }
 
           console.log("✍️ Validating signature...");
+          console.log("📝 Message to validate:", signinMessage.prepare());
+
           const validationResult = await signinMessage.validate(credentials.signature);
           console.log("📝 Signature validation result:", validationResult);
 
           if (!validationResult) {
-            console.error("❌ Signature validation failed");
-            throw new Error("Could not validate the signed message");
+            console.error("❌ Signature validation failed", {
+              signature: credentials.signature?.substring(0, 16) + "...",
+              message: signinMessage.prepare(),
+              publicKey: signinMessage.publicKey
+            });
+            return null;
           }
 
           console.log("✅ Authentication successful for:", signinMessage.publicKey);
@@ -85,6 +102,13 @@ const handler = NextAuth({
           };
         } catch (e) {
           console.error("💥 Authentication error:", e);
+          if (e instanceof Error) {
+            console.error("📋 Error details:", {
+              message: e.message,
+              stack: e.stack,
+              name: e.name
+            });
+          }
           return null;
         }
       },
@@ -124,6 +148,17 @@ const handler = NextAuth({
     },
   },
   debug: process.env.NODE_ENV === "development",
+  logger: {
+    error(code, metadata) {
+      console.error("🚨 NextAuth Error:", { code, metadata });
+    },
+    warn(code) {
+      console.warn("⚠️ NextAuth Warning:", code);
+    },
+    debug(code, metadata) {
+      console.log("🔍 NextAuth Debug:", { code, metadata });
+    },
+  },
 });
 
 export { handler as GET, handler as POST }; 
