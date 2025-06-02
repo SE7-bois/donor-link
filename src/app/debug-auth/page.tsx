@@ -75,7 +75,7 @@ export default function DebugAuthPage() {
       console.log("🧪 API Test - Message:", message.prepare());
       console.log("🧪 API Test - Signature:", serializedSignature);
 
-      // Step 3: Make direct API call
+      // Step 3: Make direct API call to NextAuth
       const response = await fetch('/api/auth/callback/credentials', {
         method: 'POST',
         headers: {
@@ -85,6 +85,8 @@ export default function DebugAuthPage() {
           message: JSON.stringify(message),
           signature: serializedSignature,
           csrfToken: csrf!,
+          callbackUrl: window.location.origin,
+          json: 'true',
         }),
       });
 
