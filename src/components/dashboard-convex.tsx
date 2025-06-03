@@ -26,6 +26,7 @@ import { cn } from "~/lib/utils"
 import { useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import ConnectWalletButton from "~/components/navigations/connect-wallet-button"
+import type { Fundraiser } from "~/data/fundraisers"
 
 export function DashboardConvex() {
   const { data: session, status } = useSession()
@@ -81,11 +82,11 @@ export function DashboardConvex() {
   }
 
   // Calculate statistics from real data
-  const totalDonated = userDonations?.reduce((sum, donation) => sum + donation.amount, 0) || 0
+  const totalDonated = userDonations?.reduce((sum, donation) => sum + donation.amount, 0) ?? 0
   const projectsSupported = userDonations ? new Set(userDonations.map(d => d.fundraiser_id)).size : 0
 
-  const totalRaised = userFundraisers?.reduce((sum, fundraiser) => sum + fundraiser.current_amount, 0) || 0
-  const activeCampaigns = userFundraisers?.filter(f => f.is_active).length || 0
+  const totalRaised = userFundraisers?.reduce((sum, fundraiser) => sum + fundraiser.current_amount, 0) ?? 0
+  const activeCampaigns = userFundraisers?.filter(f => f.is_active).length ?? 0
 
   // Filter donations based on search query and time filter
   const filteredDonations = userDonations?.filter((donation) => {
@@ -119,7 +120,7 @@ export function DashboardConvex() {
     if (statusFilter === "active") return matchesSearch && fundraiser.is_active
     if (statusFilter === "inactive") return matchesSearch && !fundraiser.is_active
     return matchesSearch
-  }) || []
+  }) ?? []
 
   // Format date
   const formatDate = (timestamp: number) => {
@@ -145,7 +146,7 @@ export function DashboardConvex() {
   }
 
   // Get status from fundraiser data
-  const getFundraiserStatus = (fundraiser: any) => {
+  const getFundraiserStatus = (fundraiser: Fundraiser) => {
     if (!fundraiser.is_active) return "Inactive"
     const percentComplete = (fundraiser.current_amount / fundraiser.target_amount) * 100
     if (percentComplete >= 100) return "Goal Met"
@@ -362,7 +363,7 @@ export function DashboardConvex() {
                   </Select>
 
                   <Button className="bg-purple-600 hover:bg-purple-700 text-white" asChild>
-                    <Link href="/create">
+                    <Link href="/fundraisers/create">
                       <Plus className="mr-2 h-4 w-4" />
                       Create
                     </Link>
@@ -380,7 +381,7 @@ export function DashboardConvex() {
                     Start your first fundraiser and make an impact! Share your cause with the world.
                   </p>
                   <Button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white" asChild>
-                    <Link href="/create">Create Your First Fundraiser</Link>
+                    <Link href="/fundraisers/create">Create Your First Fundraiser</Link>
                   </Button>
                 </div>
               ) : (

@@ -558,7 +558,7 @@ export function Profile() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">My Fundraisers</h2>
               <Button className="bg-purple-600 hover:bg-purple-700 text-white" asChild>
-                <Link href="/create">
+                <Link href="/fundraisers/create">
                   <Plus className="mr-2 h-4 w-4" />
                   Create New Fundraiser
                 </Link>

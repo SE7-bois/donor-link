@@ -37,7 +37,7 @@ export function AppShell({ children, showNav = true }: AppShellProps) {
   useEffect(() => {
     if (pathname === "/browse-fundraisers") {
       setActiveNavItem("Browse Fundraisers")
-    } else if (pathname === "/create") {
+    } else if (pathname === "/fundraisers/create") {
       setActiveNavItem("Create Fundraiser")
     } else if (pathname === "/dashboard") {
       setActiveNavItem("Dashboard")
@@ -55,7 +55,7 @@ export function AppShell({ children, showNav = true }: AppShellProps) {
     },
     {
       name: "Create Fundraiser",
-      href: "/create",
+      href: "/fundraisers/create",
       icon: PlusCircle,
       active: activeNavItem === "Create Fundraiser",
     },

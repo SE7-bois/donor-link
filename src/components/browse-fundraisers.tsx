@@ -80,8 +80,8 @@ export function BrowseFundraisers({ fundraisers }: { fundraisers: Fundraiser[] }
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredFundraisers.map((fundraiser) => (
             <Link
-              key={fundraiser.id}
-              href={`/fundraisers/${fundraiser.id}`}
+              key={fundraiser._id}
+              href={`/fundraisers/${fundraiser._id}`}
               className="block group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm"
             >
               <div className="space-y-3">
@@ -103,7 +103,7 @@ export function BrowseFundraisers({ fundraisers }: { fundraisers: Fundraiser[] }
                   <div className="flex justify-between text-xs">
                     <span className="font-medium">{fundraiser.percentFunded}% Funded</span>
                     <span className="text-muted-foreground">
-                      {fundraiser.currentAmount} SOL / {fundraiser.goalAmount} SOL
+                      {fundraiser.currentAmount || fundraiser.current_amount} SOL / {fundraiser.goalAmount || fundraiser.target_amount} SOL
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2">

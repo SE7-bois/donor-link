@@ -277,7 +277,7 @@ function FinalCTASection() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/create">Create a Fundraiser</Link>
+              <Link href="/fundraisers/create">Create a Fundraiser</Link>
             </Button>
           </div>
         </div>
@@ -295,7 +295,7 @@ function Footer() {
     },
     {
       label: "Create a Fundraiser",
-      href: "/create",
+      href: "/fundraisers/create",
     },
     {
       label: "Leaderboard",

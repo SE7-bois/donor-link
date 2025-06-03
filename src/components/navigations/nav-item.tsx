@@ -30,9 +30,9 @@ export default function NavItem() {
     if (connected) {
         navItems.push({
             name: "Create Fundraiser",
-            href: "/create",
+            href: "/fundraisers/create",
             icon: PlusCircle,
-            active: pathname === "/create",
+            active: pathname === "/fundraisers/create",
         });
         navItems.push({
             name: "Profile",
@@ -49,7 +49,7 @@ export default function NavItem() {
                     key={item.href}
                     href={item.href}
                     onClick={(e) => {
-                        if (!connected && (item.href === "/profile" || item.href === "/create")) {
+                        if (!connected && (item.href === "/profile" || item.href === "/fundraisers/create")) {
                             e.preventDefault();
                             toast.error("Please connect your wallet first.");
                         }

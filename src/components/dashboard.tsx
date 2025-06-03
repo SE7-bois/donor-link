@@ -569,7 +569,7 @@ export function Dashboard() {
                         Ready to start a campaign? Create your first fundraiser and begin making an impact.
                       </p>
                       <Button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white" asChild>
-                        <Link href="/create">Create New Fundraiser</Link>
+                        <Link href="/fundraisers/create">Create New Fundraiser</Link>
                       </Button>
                     </>
                   )}

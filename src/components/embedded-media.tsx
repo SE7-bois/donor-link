@@ -33,18 +33,14 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
     setIsFullscreen(!isFullscreen)
   }
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-  }
-
   // For a single image, render it directly
   if (media.length === 1 && media[0]?.type === "image") {
     return (
       <div className={cn("relative rounded-md overflow-hidden my-4", className)}>
         <div className="relative aspect-video">
           <Image
-            src={media[0]?.url || "/placeholder.svg"}
-            alt={media[0]?.alt || "Update media"}
+            src={media[0]?.url ?? "/placeholder.svg"}
+            alt={media[0]?.alt ?? "Update media"}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 600px"

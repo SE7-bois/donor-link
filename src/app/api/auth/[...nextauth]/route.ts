@@ -6,7 +6,7 @@ import { SigninMessage } from "~/utils/SigninMessage";
 const handler = NextAuth({
   // Force the correct base URL for local development
   ...(process.env.NODE_ENV === "development" && {
-    url: process.env.NEXTAUTH_URL || "http://localhost:3000",
+    url: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
   }),
   providers: [
     CredentialsProvider({

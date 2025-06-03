@@ -1,10 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useParams } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { useWallet } from "@solana/wallet-adapter-react"
+import { useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
@@ -14,85 +12,50 @@ import {
   Share2,
   Users,
   Clock,
-} from "lucide-react"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
-import { ScrollArea } from "~/components/ui/scroll-area"
-import { useQuery } from "convex/react"
-import { api } from "../../convex/_generated/api"
-import type { Id } from "../../convex/_generated/dataModel"
+} from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 
 export function FundraiserDetailSimple() {
-  const params = useParams()
-  const { data: session } = useSession()
-  const { publicKey } = useWallet()
-  const fundraiserId = params?.id as string
+  const params = useParams();
+  const fundraiserId = params.id as Id<"fundraisers">;
 
   // Fetch fundraiser data from Convex
   const fundraiser = useQuery(
     api.fundraisers.getFundraiser,
-    fundraiserId ? {
-      fundraiser_id: fundraiserId as Id<"fundraisers">,
-      viewer_wallet_address: publicKey?.toBase58()
-    } : "skip"
-  )
+    {
+      fundraiser_id: fundraiserId,
+    }
+  );
 
   // Fetch donations for this fundraiser
   const donations = useQuery(
     api.donations.getFundraiserDonations,
     fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
-  )
+  );
 
   // Fetch fundraiser stats
   const stats = useQuery(
     api.donations.getFundraiserStats,
     fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
-  )
+  );
 
-  const [donationAmount, setDonationAmount] = useState("")
-  const [copiedAddress, setCopiedAddress] = useState(false)
-
-  // Loading state
-  if (!fundraiser || !stats) {
-    return (
-      <ScrollArea className="h-[calc(100vh-3.5rem)]">
-        <div className="container py-6 md:py-10">
-          <div className="animate-pulse space-y-8">
-            <div className="h-8 bg-muted/30 rounded w-1/3"></div>
-            <div className="h-12 bg-muted/30 rounded w-2/3"></div>
-            <div className="h-64 bg-muted/30 rounded"></div>
-          </div>
-        </div>
-      </ScrollArea>
-    )
-  }
-
-  // Error state
-  if (!fundraiser) {
-    return (
-      <ScrollArea className="h-[calc(100vh-3.5rem)]">
-        <div className="container py-6 md:py-10">
-          <div className="text-center py-16">
-            <h2 className="text-2xl font-bold">Fundraiser not found</h2>
-            <p className="text-muted-foreground mt-2">This fundraiser may have been removed or the link is invalid.</p>
-            <Button asChild className="mt-4">
-              <Link href="/fundraisers">Back to Fundraisers</Link>
-            </Button>
-          </div>
-        </div>
-      </ScrollArea>
-    )
-  }
+  const [donationAmount, setDonationAmount] = useState("");
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   // Helper functions
   const truncateAddress = (address: string) => {
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   }
 
   const copyToClipboard = (address: string) => {
-    navigator.clipboard.writeText(address)
-    setCopiedAddress(true)
-    setTimeout(() => setCopiedAddress(false), 2000)
+    navigator.clipboard.writeText(address);
+    setCopiedAddress(true);
+    setTimeout(() => setCopiedAddress(false), 2000);
   }
 
   const formatCurrency = (amount: number) => {
@@ -100,16 +63,7 @@ export function FundraiserDetailSimple() {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
-    }).format(amount)
-  }
-
-  const getCategoryFromTitle = (title: string) => {
-    if (title.toLowerCase().includes('garden') || title.toLowerCase().includes('environment')) return 'Environment';
-    if (title.toLowerCase().includes('medical') || title.toLowerCase().includes('health')) return 'Healthcare';
-    if (title.toLowerCase().includes('school') || title.toLowerCase().includes('technology') || title.toLowerCase().includes('education')) return 'Education';
-    if (title.toLowerCase().includes('animal') || title.toLowerCase().includes('shelter')) return 'Animal Welfare';
-    if (title.toLowerCase().includes('sports') || title.toLowerCase().includes('youth')) return 'Sports & Recreation';
-    return 'Community';
+    }).format(amount);
   }
 
   const formatDate = (timestamp: number) => {
@@ -117,12 +71,12 @@ export function FundraiserDetailSimple() {
       year: "numeric",
       month: "long",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const handleDonate = () => {
-    alert(`Donation of ${donationAmount} USD - This would integrate with Solana payment`)
-  }
+    alert(`Donation of ${donationAmount} USD - This would integrate with Solana payment`);
+  };
 
   return (
     <ScrollArea className="h-[calc(100vh-3.5rem)]">
@@ -143,7 +97,7 @@ export function FundraiserDetailSimple() {
             {/* Fundraiser header */}
             <div className="space-y-4">
               <div className="inline-block bg-purple-500/10 text-purple-500 px-2.5 py-0.5 rounded-full text-xs font-medium">
-                {getCategoryFromTitle(fundraiser.title)}
+                {fundraiser.category.join(", ")}
               </div>
               <h1 className="text-3xl font-bold tracking-tight">{fundraiser.title}</h1>
               <p className="text-muted-foreground">
@@ -302,5 +256,5 @@ export function FundraiserDetailSimple() {
         </div>
       </div>
     </ScrollArea>
-  )
-} 
+  );
+}
