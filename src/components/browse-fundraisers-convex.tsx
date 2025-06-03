@@ -12,25 +12,23 @@ import { api } from "../../convex/_generated/api";
 
 type Category =
   | "Education"
-  | "Healthcare"
+  | "Health & Medical"
   | "Environment"
-  | "Community"
-  | "Animal Welfare"
-  | "Sports & Recreation"
+  | "Community Projects"
   | "Arts & Creative"
-  | "Technology"
-  | "Emergency Relief";
+  | "Technology & Open Source"
+  | "Emergency Relief"
+  | "Others";
 
 const categories: Category[] = [
   "Education",
-  "Healthcare",
+  "Health & Medical",
   "Environment",
-  "Community",
-  "Animal Welfare",
-  "Sports & Recreation",
+  "Community Projects",
   "Arts & Creative",
-  "Technology",
+  "Technology & Open Source",
   "Emergency Relief",
+  "Others",
 ];
 
 export function BrowseFundraisersConvex() {
@@ -38,17 +36,11 @@ export function BrowseFundraisersConvex() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Category mapping function
-  const getCategoryFromTitle = (title: string): Category => {
-    if (title.toLowerCase().includes('garden') || title.toLowerCase().includes('environment')) return 'Environment';
-    if (title.toLowerCase().includes('medical') || title.toLowerCase().includes('health')) return 'Healthcare';
-    if (title.toLowerCase().includes('school') || title.toLowerCase().includes('technology') || title.toLowerCase().includes('education')) return 'Education';
-    if (title.toLowerCase().includes('animal') || title.toLowerCase().includes('shelter')) return 'Animal Welfare';
-    if (title.toLowerCase().includes('sports') || title.toLowerCase().includes('youth')) return 'Sports & Recreation';
-    if (title.toLowerCase().includes('arts') || title.toLowerCase().includes('theater')) return 'Arts & Creative';
-    if (title.toLowerCase().includes('tech') || title.toLowerCase().includes('blockchain')) return 'Technology';
-    if (title.toLowerCase().includes('emergency') || title.toLowerCase().includes('relief')) return 'Emergency Relief';
-    return 'Community';
+  // Get the primary category from the fundraiser's category array
+  const getPrimaryCategory = (categories: string[]): Category => {
+    if (categories.length === 0) return 'Others';
+    // Return the first category as the primary one
+    return categories[0] as Category;
   };
 
   if (!fundraisers) {
@@ -75,8 +67,8 @@ export function BrowseFundraisersConvex() {
   }
 
   const filteredFundraisers = fundraisers.filter((fundraiser) => {
-    const category = getCategoryFromTitle(fundraiser.title);
-    const matchesCategory = selectedCategory ? category === selectedCategory : true;
+    const primaryCategory = getPrimaryCategory(fundraiser.category);
+    const matchesCategory = selectedCategory ? fundraiser.category.includes(selectedCategory) : true;
     const matchesSearch =
       fundraiser.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       fundraiser.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -141,7 +133,7 @@ export function BrowseFundraisersConvex() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredFundraisers.map((fundraiser) => {
-            const category = getCategoryFromTitle(fundraiser.title);
+            const primaryCategory = getPrimaryCategory(fundraiser.category);
             const percentFunded = (fundraiser.current_amount / fundraiser.target_amount) * 100;
 
             return (
@@ -153,11 +145,13 @@ export function BrowseFundraisersConvex() {
                 <div className="space-y-3">
                   <div className="h-40 rounded-md bg-muted/30"></div>
                   <Badge className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 hover:text-purple-500">
-                    {category}
+                    {primaryCategory}
                   </Badge>
                   <div className="space-y-1.5">
                     <h3 className="font-semibold tracking-tight">{fundraiser.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{fundraiser.description}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {fundraiser.tagline || fundraiser.description}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-2 w-full rounded-full bg-muted/50">

@@ -2,34 +2,67 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import {
   ArrowLeft,
   Calendar,
+  ChevronDown,
+  ChevronUp,
+  Clock,
   Copy,
   ExternalLink,
   Heart,
   Share2,
   Users,
-  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Edit,
+  Trash2,
+  Crown,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { useQuery } from "convex/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+
+import { Separator } from "~/components/ui/separator";
+import { cn } from "~/lib/utils";
+
+import { SupportersModal } from "~/components/supporters-modal";
+import { MarkdownContent } from "~/components/markdown-content";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { toast } from "sonner";
 
 export function FundraiserDetailSimple() {
   const params = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { publicKey } = useWallet();
   const fundraiserId = params.id as Id<"fundraisers">;
 
-  // Fetch fundraiser data from Convex
+  // Fetch fundraiser data from Convex (with computed UI fields)
   const fundraiser = useQuery(
-    api.fundraisers.getFundraiser,
+    api.fundraisers.getFundraiserWithStats,
     {
       fundraiser_id: fundraiserId,
     }
+  );
+
+  // Fetch recent supporters for this fundraiser
+  const recentSupporters = useQuery(
+    api.donations.getRecentSupporters,
+    fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers">, limit: 5 } : "skip"
+  );
+
+  // Fetch all supporters for the modal
+  const allSupporters = useQuery(
+    api.donations.getAllSupporters,
+    fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
   );
 
   // Fetch donations for this fundraiser
@@ -44,8 +77,19 @@ export function FundraiserDetailSimple() {
     fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
   );
 
+  // Delete fundraiser mutation
+  const deleteFundraiserMutation = useMutation(api.fundraisers.deleteFundraiser);
+
   const [donationAmount, setDonationAmount] = useState("");
+  const [stablecoin, setStablecoin] = useState<"USDC" | "USDT">("USDC");
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [showAllUpdates, setShowAllUpdates] = useState(false);
+  const [isSupportersModalOpen, setIsSupportersModalOpen] = useState(false);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+
+  // Check if current user is the owner of this fundraiser
+  const userWalletAddress = publicKey?.toBase58();
+  const isOwner = userWalletAddress && fundraiser && userWalletAddress === fundraiser.owner_wallet_address;
 
   // Helper functions
   const truncateAddress = (address: string) => {
@@ -75,11 +119,98 @@ export function FundraiserDetailSimple() {
   };
 
   const handleDonate = () => {
-    alert(`Donation of ${donationAmount} USD - This would integrate with Solana payment`);
+    // TODO: Implement Solana payment integration
+    toast.info("Donation feature coming soon!", {
+      description: "Solana payment integration is in development."
+    });
   };
 
+  const handlePrevMedia = () => {
+    if (!fundraiser?.media || fundraiser.media.length === 0) return;
+    setActiveMediaIndex((activeMediaIndex - 1 + fundraiser.media.length) % fundraiser.media.length);
+  };
+
+  const handleNextMedia = () => {
+    if (!fundraiser?.media || fundraiser.media.length === 0) return;
+    setActiveMediaIndex((activeMediaIndex + 1) % fundraiser.media.length);
+  };
+
+  const handleEditFundraiser = () => {
+    // Navigate to edit page or open edit modal
+    window.location.href = `/fundraisers/${fundraiserId}/edit`;
+  };
+
+  const handleDeleteFundraiser = async () => {
+    const confirmMessage = `Are you sure you want to delete "${fundraiser?.title}"?\n\n⚠️ This action cannot be undone!\n\n⚠️ If this fundraiser has received donations, deletion will be blocked and you should deactivate it instead.\n\nClick OK to proceed with deletion.`;
+
+    if (window.confirm(confirmMessage)) {
+      try {
+        await deleteFundraiserMutation({
+          fundraiser_id: fundraiserId,
+          wallet_address: userWalletAddress!,
+        });
+
+        toast.success("Fundraiser deleted successfully!");
+
+        // Redirect to fundraisers list
+        router.push("/fundraisers");
+      } catch (error) {
+        toast.error("Failed to delete fundraiser", {
+          description: error instanceof Error ? error.message : "Please try again later."
+        });
+      }
+    }
+  };
+
+  // Show loading state while data is being fetched
+  if (fundraiser === undefined || stats === undefined) {
+    return (
+      <div className="container py-6 md:py-10">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+            <p className="text-muted-foreground">Loading fundraiser...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if fundraiser not found
+  if (fundraiser === null) {
+    return (
+      <div className="container py-6 md:py-10">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">Fundraiser not found</p>
+            <Button variant="outline" asChild>
+              <Link href="/fundraisers">Back to Fundraisers</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate additional UI fields
+  const daysLeft = fundraiser.end_date ?
+    Math.max(0, Math.ceil((fundraiser.end_date - Date.now()) / (1000 * 60 * 60 * 24))) :
+    null;
+
+  const endDate = fundraiser.end_date ?
+    new Date(fundraiser.end_date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }) : null;
+
+  // Get displayed updates (show first 2 by default)
+  const displayedUpdates = showAllUpdates
+    ? (fundraiser.updates || [])
+    : (fundraiser.updates || []).slice(0, 2);
+
   return (
-    <ScrollArea className="h-[calc(100vh-3.5rem)]">
+    <>
       <div className="container py-6 md:py-10">
         {/* Back button */}
         <div className="mb-6">
@@ -91,6 +222,40 @@ export function FundraiserDetailSimple() {
           </Button>
         </div>
 
+        {/* Owner Management Section */}
+        {isOwner && (
+          <div className="mb-6 p-4 rounded-lg border border-border/30 bg-muted/20 dark:bg-muted/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium text-foreground">
+                  You are the owner of this fundraiser
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleEditFundraiser}
+                  size="sm"
+                  variant="outline"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  onClick={handleDeleteFundraiser}
+                  size="sm"
+                  variant="outline"
+                  className="text-muted-foreground hover:text-red-600 hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/20"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content column */}
           <div className="lg:col-span-2 space-y-8">
@@ -100,15 +265,24 @@ export function FundraiserDetailSimple() {
                 {fundraiser.category.join(", ")}
               </div>
               <h1 className="text-3xl font-bold tracking-tight">{fundraiser.title}</h1>
-              <p className="text-muted-foreground">
-                {fundraiser.description.substring(0, 200)}...
-              </p>
+              {fundraiser.tagline && (
+                <p className="text-muted-foreground text-lg">
+                  {fundraiser.tagline}
+                </p>
+              )}
 
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <span>Created by</span>
                 <span className="font-medium text-foreground">
-                  {truncateAddress(fundraiser.owner_wallet_address)}
+                  {fundraiser.creator_name || truncateAddress(fundraiser.owner_wallet_address)}
                 </span>
+                {isOwner && (
+                  <span className="inline-flex items-center gap-1 bg-muted/30 text-muted-foreground px-2 py-0.5 rounded-full text-xs font-medium">
+                    <Crown className="h-3 w-3" />
+                    You
+                  </span>
+                )}
+                <span className="text-xs">({truncateAddress(fundraiser.owner_wallet_address)})</span>
                 <button
                   onClick={() => copyToClipboard(fundraiser.owner_wallet_address)}
                   className="text-muted-foreground hover:text-foreground transition-colors"
@@ -120,59 +294,181 @@ export function FundraiserDetailSimple() {
               </div>
             </div>
 
-            {/* Placeholder for media */}
-            <div className="aspect-video bg-muted/30 rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">Media gallery would go here</p>
-            </div>
+            {/* Advanced Media Gallery with Hero Image and Thumbnails */}
+            {fundraiser.media && fundraiser.media.length > 0 ? (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Media Gallery</h2>
 
-            {/* Description */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Description</h2>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {fundraiser.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Recent donations */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Recent Donations</h2>
-              {donations && donations.length > 0 ? (
-                <div className="space-y-3">
-                  {donations.slice(0, 5).map((donation, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 rounded-lg border border-border/50 bg-card/50">
-                      <div>
-                        <p className="font-medium">{donation.donor_display}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(donation.created_at)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-green-500">{formatCurrency(donation.amount)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          <a
-                            href={`https://solscan.io/tx/${donation.transaction_signature}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-purple-500 flex items-center gap-1"
-                          >
-                            View tx <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </p>
-                      </div>
+                {/* Hero Image/Video Display */}
+                <div className="relative rounded-lg overflow-hidden bg-muted/30 border border-border/20">
+                  {fundraiser.media?.[activeMediaIndex]?.type === "image" ? (
+                    <img
+                      src={fundraiser.media?.[activeMediaIndex]?.url}
+                      alt={fundraiser.media?.[activeMediaIndex]?.alt || "Media"}
+                      className="w-full h-auto object-contain max-h-96 min-h-64"
+                      style={{ aspectRatio: 'auto' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="aspect-video">
+                      <video
+                        src={fundraiser.media?.[activeMediaIndex]?.url}
+                        poster={fundraiser.media?.[activeMediaIndex]?.thumbnail}
+                        className="w-full h-full object-contain"
+                        controls
+                        preload="metadata"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Media Type Indicator */}
+                  <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                    {fundraiser.media?.[activeMediaIndex]?.type === "image" ? "Image" : "Video"} {activeMediaIndex + 1} of {fundraiser.media?.length}
+                  </div>
+
+                  {/* Navigation Arrows (only show if more than 1 media item) */}
+                  {(fundraiser.media?.length || 0) > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevMedia}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={handleNextMedia}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
                 </div>
-              ) : (
-                <p className="text-muted-foreground">No donations yet. Be the first to support this cause!</p>
-              )}
-            </div>
+
+                {/* Thumbnail Navigation (only show if more than 1 media item) */}
+                {(fundraiser.media?.length || 0) > 1 && (
+                  <div className="flex gap-3 overflow-x-auto pb-2">
+                    {fundraiser.media?.map((mediaItem, index) => (
+                      <button
+                        key={mediaItem.id}
+                        onClick={() => setActiveMediaIndex(index)}
+                        className={cn(
+                          "relative flex-shrink-0 rounded-md overflow-hidden border-2 transition-all bg-muted/20",
+                          activeMediaIndex === index
+                            ? "border-purple-500 ring-2 ring-purple-500/20"
+                            : "border-transparent hover:border-purple-500/50"
+                        )}
+                        style={{ width: 'auto', minWidth: '80px', maxWidth: '120px' }}
+                      >
+                        {mediaItem.type === "image" ? (
+                          <img
+                            src={mediaItem.url}
+                            alt={mediaItem.alt || `Thumbnail ${index + 1}`}
+                            className="w-full h-16 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="relative w-20 h-16">
+                            <img
+                              src={mediaItem.thumbnail || mediaItem.url}
+                              alt={mediaItem.alt || `Video thumbnail ${index + 1}`}
+                              className="w-full h-full object-contain bg-black/5"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <Play className="h-4 w-4 text-white" fill="white" />
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="aspect-video bg-muted/30 rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground">No media uploaded for this fundraiser</p>
+              </div>
+            )}
+
+            {/* Tabs for Description and Updates */}
+            <Tabs defaultValue="description" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="description">Description</TabsTrigger>
+                <TabsTrigger value="updates">
+                  Updates ({fundraiser.updates ? fundraiser.updates.length : 0})
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="description" className="pt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Project Description</h3>
+                  <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded">
+                    Supports Markdown
+                  </span>
+                </div>
+                <MarkdownContent content={fundraiser.description} />
+              </TabsContent>
+              <TabsContent value="updates" className="pt-4 space-y-6">
+                {fundraiser.updates && fundraiser.updates.length > 0 ? (
+                  <>
+                    {displayedUpdates.map((update: any) => (
+                      <div key={update.id} className="space-y-2 pb-6 border-b border-border/50 last:border-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium">{update.title}</h3>
+                          <span className="text-xs text-muted-foreground">{update.date}</span>
+                        </div>
+                        <MarkdownContent content={update.content} />
+
+                        {/* Embedded Media in Updates */}
+                        {update.media && update.media.length > 0 && (
+                          <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+                            <p className="text-sm text-muted-foreground">Update media coming soon...</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {fundraiser.updates.length > 2 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAllUpdates(!showAllUpdates)}
+                        className="w-full text-muted-foreground hover:text-foreground"
+                      >
+                        {showAllUpdates ? (
+                          <>
+                            Show Less <ChevronUp className="ml-2 h-4 w-4" />
+                          </>
+                        ) : (
+                          <>
+                            Show All Updates <ChevronDown className="ml-2 h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No updates yet.</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Sidebar column */}
           <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-20 space-y-6">
+            <div className="lg:sticky lg:top-20 space-y-8">
               {/* Key statistics block */}
               <div className="rounded-lg border border-border/50 bg-card p-6 space-y-6">
                 <div className="space-y-2">
@@ -195,66 +491,190 @@ export function FundraiserDetailSimple() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">{((fundraiser.current_amount / fundraiser.target_amount) * 100).toFixed(0)}% Funded</span>
+                    <span className="text-muted-foreground">
+                      {formatCurrency(fundraiser.current_amount)} / {formatCurrency(fundraiser.target_amount)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/20">
                     <Users className="h-4 w-4 text-muted-foreground mb-1" />
-                    <span className="font-medium">{stats.total_donors}</span>
+                    <span className="font-medium">{stats?.total_donors || 0}</span>
                     <span className="text-xs text-muted-foreground">Supporters</span>
+                    {/* View All Supporters Button - Subtle link below the supporters count */}
+                    <button
+                      onClick={() => setIsSupportersModalOpen(true)}
+                      className="text-xs text-purple-500 hover:text-purple-400 mt-1 transition-colors"
+                    >
+                      View All
+                    </button>
                   </div>
                   <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/20">
-                    <Calendar className="h-4 w-4 text-muted-foreground mb-1" />
-                    <span className="font-medium">{fundraiser.is_active ? 'Active' : 'Inactive'}</span>
-                    <span className="text-xs text-muted-foreground">Status</span>
+                    <Clock className="h-4 w-4 text-muted-foreground mb-1" />
+                    <span className="font-medium">{daysLeft || "∞"}</span>
+                    <span className="text-xs text-muted-foreground">Days Left</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-1.5" />
-                    <span>Created {formatDate(fundraiser.created_at)}</span>
+                    <Calendar className="h-4 w-4 mr-1.5" />
+                    <span>
+                      {endDate ? `Ends ${endDate}` : "No end date"}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button className="text-muted-foreground hover:text-foreground transition-colors">
+                      <Share2 className="h-4 w-4" />
+                      <span className="sr-only">Share</span>
+                    </button>
+                    <button className="text-muted-foreground hover:text-foreground transition-colors">
+                      <Heart className="h-4 w-4" />
+                      <span className="sr-only">Favorite</span>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* Donation form */}
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-4">
-                <h3 className="font-semibold">Support this cause</h3>
-                <div className="space-y-3">
-                  <Input
-                    type="number"
-                    placeholder="Enter amount (USD)"
-                    value={donationAmount}
-                    onChange={(e) => setDonationAmount(e.target.value)}
-                  />
+              {/* Enhanced Donation action block */}
+              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-6">
+                <h3 className="text-lg font-medium">Support this Project</h3>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="amount" className="text-sm text-muted-foreground">
+                      Donation Amount
+                    </label>
+                    <div className="relative">
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="Enter amount"
+                        value={donationAmount}
+                        onChange={(e) => setDonationAmount(e.target.value)}
+                        className="pl-8"
+                      />
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <span className="text-muted-foreground">$</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="stablecoin" className="text-sm text-muted-foreground">
+                      Select Stablecoin
+                    </label>
+                    <Select value={stablecoin} onValueChange={(value) => setStablecoin(value as "USDC" | "USDT")}>
+                      <SelectTrigger id="stablecoin">
+                        <SelectValue placeholder="Select stablecoin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USDC">USDC</SelectItem>
+                        <SelectItem value="USDT">USDT</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="rounded-md bg-muted/20 p-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Your {stablecoin} Balance:</span>
+                      <span className="font-medium">150.75 {stablecoin}</span>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={handleDonate}
+                    disabled={!donationAmount || Number.parseFloat(donationAmount) <= 0}
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    disabled={!donationAmount || parseFloat(donationAmount) <= 0}
                   >
-                    <Heart className="mr-2 h-4 w-4" />
-                    Donate {donationAmount ? `$${donationAmount}` : ''}
+                    {donationAmount && Number.parseFloat(donationAmount) > 0
+                      ? `Donate $${donationAmount} ${stablecoin}`
+                      : "Enter an amount to donate"}
                   </Button>
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    Donations are processed on the Solana blockchain.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Donations are processed securely on the Solana blockchain
-                </p>
               </div>
 
-              {/* Share buttons */}
+              {/* Recent supporters */}
               <div className="rounded-lg border border-border/50 bg-card p-6 space-y-4">
-                <h3 className="font-semibold">Share this fundraiser</h3>
-                <Button variant="outline" className="w-full">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Recent Supporters</h3>
+                  {/* View All Supporters Button - Alternative placement as text link */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSupportersModalOpen(true)}
+                    className="text-xs text-purple-500 hover:text-purple-400 h-auto p-0"
+                  >
+                    View All
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {recentSupporters && recentSupporters.length > 0 ? (
+                    recentSupporters.map((supporter) => (
+                      <div key={supporter.id} className="flex justify-between items-center text-sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-6 w-6 rounded-full bg-muted/50"></div>
+                          <span>{supporter.display_name || truncateAddress(supporter.address)}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="font-medium">{formatCurrency(supporter.amount)}</span>
+                          <span className="text-xs text-muted-foreground">{supporter.timestamp}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : donations && donations.length > 0 ? (
+                    donations.slice(0, 5).map((donation, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-6 w-6 rounded-full bg-muted/50"></div>
+                          <span>{donation.donor_display}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="font-medium">{formatCurrency(donation.amount)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(donation.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-muted-foreground">No supporters yet.</p>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* View All Supporters Button - Primary placement */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSupportersModalOpen(true)}
+                  className="w-full text-muted-foreground hover:text-foreground"
+                >
+                  View All Supporters
+                  <ExternalLink className="ml-2 h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </ScrollArea>
+
+      {/* Supporters Modal */}
+      <SupportersModal
+        isOpen={isSupportersModalOpen}
+        onClose={() => setIsSupportersModalOpen(false)}
+        fundraiserTitle={fundraiser.title}
+        supporters={allSupporters || []}
+      />
+    </>
   );
 }

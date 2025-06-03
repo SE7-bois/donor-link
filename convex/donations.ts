@@ -216,4 +216,99 @@ export const hasUserDonated = query({
 
     return !!donation;
   },
+});
+
+// Get leaderboard data - top donors by total amount donated
+export const getLeaderboard = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 100;
+
+    // Get all donations
+    const allDonations = await ctx.db
+      .query("donations")
+      .collect();
+
+    // Group donations by donor wallet address and calculate totals
+    const donorTotals = new Map<string, { totalDonated: number; donationCount: number; lastDonation: number }>();
+
+    for (const donation of allDonations) {
+      const existing = donorTotals.get(donation.donor_wallet_address);
+      if (existing) {
+        existing.totalDonated += donation.amount;
+        existing.donationCount += 1;
+        existing.lastDonation = Math.max(existing.lastDonation, donation.created_at);
+      } else {
+        donorTotals.set(donation.donor_wallet_address, {
+          totalDonated: donation.amount,
+          donationCount: 1,
+          lastDonation: donation.created_at,
+        });
+      }
+    }
+
+    // Convert to array and sort by total donated (descending)
+    const leaderboardData = Array.from(donorTotals.entries())
+      .map(([walletAddress, data]) => ({
+        walletAddress,
+        totalDonated: data.totalDonated,
+        donationCount: data.donationCount,
+        lastDonation: data.lastDonation,
+      }))
+      .sort((a, b) => b.totalDonated - a.totalDonated)
+      .slice(0, limit)
+      .map((donor, index) => {
+        const rank = index + 1;
+        return {
+          ...donor,
+          rank,
+          id: `${donor.walletAddress}-${rank}`, // Create a unique ID for the component
+        };
+      });
+
+    return leaderboardData;
+  },
+});
+
+// Get user's position in leaderboard
+export const getUserLeaderboardPosition = query({
+  args: {
+    wallet_address: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get all donations
+    const allDonations = await ctx.db
+      .query("donations")
+      .collect();
+
+    // Group donations by donor wallet address and calculate totals
+    const donorTotals = new Map<string, number>();
+
+    for (const donation of allDonations) {
+      const existing = donorTotals.get(donation.donor_wallet_address) || 0;
+      donorTotals.set(donation.donor_wallet_address, existing + donation.amount);
+    }
+
+    // Convert to array and sort by total donated (descending)
+    const sortedDonors = Array.from(donorTotals.entries())
+      .sort((a, b) => b[1] - a[1]);
+
+    // Find user's position
+    const userPosition = sortedDonors.findIndex(([walletAddress]) => walletAddress === args.wallet_address);
+
+    if (userPosition === -1) {
+      return null; // User hasn't donated yet
+    }
+
+    const userTotal = donorTotals.get(args.wallet_address) || 0;
+
+    return {
+      rank: userPosition + 1,
+      totalDonated: userTotal,
+      walletAddress: args.wallet_address,
+      id: `${args.wallet_address}-${userPosition + 1}`,
+    };
+  },
 }); 

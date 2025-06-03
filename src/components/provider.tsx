@@ -69,7 +69,7 @@ export default function SolanaProvider({ children }: { children: ReactNode }) {
     className: "wallet-modal-custom-class", // Custom CSS class
   };
 
-  console.log(`Solana provider loaded. Network: ${network}`);
+
 
   return (
     <ConnectionProvider endpoint={endpoint}>

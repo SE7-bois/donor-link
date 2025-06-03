@@ -1,9 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
-import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 const schema = defineSchema({
-  ...authTables,
   users: defineTable({
     wallet_address: v.string(),
     nonce: v.string(),
@@ -11,6 +9,12 @@ const schema = defineSchema({
     created_at: v.number(),
     last_login_at: v.number(),
     is_active: v.boolean(),
+    // Profile fields
+    display_name: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    website: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    profile_image: v.optional(v.string()),
   }).index("by_wallet_address", ["wallet_address"]),
 
   // Enhanced fundraisers table to match dummy data structure
@@ -18,7 +22,15 @@ const schema = defineSchema({
     title: v.string(),
     description: v.string(), // This will support markdown content
     tagline: v.optional(v.string()),
-    category: v.optional(v.string()), // Maps to FundraiserCategory
+    category: v.array(v.union(
+      v.literal("Education"),
+      v.literal("Health & Medical"),
+      v.literal("Environment"),
+      v.literal("Community Projects"),
+      v.literal("Arts & Creative"),
+      v.literal("Technology & Open Source"),
+      v.literal("Emergency Relief"),
+      v.literal("Others"))),
     owner_wallet_address: v.string(), // Links to users.wallet_address
     creator_name: v.optional(v.string()), // Display name for creator
     target_amount: v.number(),

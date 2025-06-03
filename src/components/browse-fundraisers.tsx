@@ -14,7 +14,7 @@ export function BrowseFundraisers({ fundraisers }: { fundraisers: Fundraiser[] }
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFundraisers = fundraisers.filter((fundraiser) => {
-    const matchesCategory = selectedCategory ? fundraiser.category === selectedCategory : true;
+    const matchesCategory = selectedCategory ? fundraiser.category?.includes(selectedCategory) : true;
     const matchesSearch =
       fundraiser.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       fundraiser.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -87,7 +87,7 @@ export function BrowseFundraisers({ fundraisers }: { fundraisers: Fundraiser[] }
               <div className="space-y-3">
                 <div className="h-40 rounded-md bg-muted/30"></div>
                 <Badge className="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 hover:text-purple-500">
-                  {fundraiser.category}
+                  {fundraiser.category?.join(", ")}
                 </Badge>
                 <div className="space-y-1.5">
                   <h3 className="font-semibold tracking-tight">{fundraiser.title}</h3>

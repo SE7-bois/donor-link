@@ -15,7 +15,7 @@ import {
   WalletIcon,
   Plus,
 } from "lucide-react"
-import { ScrollArea } from "~/components/ui/scroll-area"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
@@ -304,505 +304,503 @@ export function Dashboard() {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-3.5rem)]">
-      <div className="container py-6 md:py-10 space-y-8">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Track your donations and fundraising activities</p>
-        </div>
+    <div className="container py-6 md:py-10 space-y-8">
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Track your donations and fundraising activities</p>
+      </div>
 
-        <Tabs defaultValue="donations" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="donations">My Donations</TabsTrigger>
-            <TabsTrigger value="fundraisers">My Fundraisers</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="donations" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsTrigger value="donations">My Donations</TabsTrigger>
+          <TabsTrigger value="fundraisers">My Fundraisers</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="donations" className="space-y-8">
-            {/* Key Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
-                <p className="text-sm text-muted-foreground">Total Donated (USD)</p>
-                <p className="text-3xl font-bold text-purple-500">{formatCurrency(totalDonated)}</p>
+        <TabsContent value="donations" className="space-y-8">
+          {/* Key Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
+              <p className="text-sm text-muted-foreground">Total Donated (USD)</p>
+              <p className="text-3xl font-bold text-purple-500">{formatCurrency(totalDonated)}</p>
+            </div>
+
+            <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
+              <p className="text-sm text-muted-foreground">Projects Supported</p>
+              <p className="text-3xl font-bold">{projectsSupported}</p>
+            </div>
+
+            <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Your Leaderboard Rank</p>
+                <Link
+                  href="/leaderboard"
+                  className="text-xs text-purple-500 hover:text-purple-400 flex items-center gap-1"
+                >
+                  View Leaderboard
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
               </div>
-
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
-                <p className="text-sm text-muted-foreground">Projects Supported</p>
-                <p className="text-3xl font-bold">{projectsSupported}</p>
+              <div className="flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-purple-500" />
+                <p className="text-3xl font-bold">#{leaderboardRank}</p>
               </div>
+            </div>
+          </div>
 
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">Your Leaderboard Rank</p>
-                  <Link
-                    href="/leaderboard"
-                    className="text-xs text-purple-500 hover:text-purple-400 flex items-center gap-1"
-                  >
-                    View Leaderboard
-                    <ArrowUpRight className="h-3 w-3" />
-                  </Link>
+          {/* Donation History Section */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h2 className="text-xl font-semibold">My Donation History</h2>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:flex-none sm:w-64">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search donations..."
+                    className="pl-9 bg-background border-border/50 h-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-purple-500" />
-                  <p className="text-3xl font-bold">#{leaderboardRank}</p>
-                </div>
+
+                <Select value={timeFilter} onValueChange={setTimeFilter}>
+                  <SelectTrigger className="w-[130px]">
+                    <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Time period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All time</SelectItem>
+                    <SelectItem value="month">Past month</SelectItem>
+                    <SelectItem value="year">Past year</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Donation History Section */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl font-semibold">My Donation History</h2>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-none sm:w-64">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search donations..."
-                      className="pl-9 bg-background border-border/50 h-10"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-
-                  <Select value={timeFilter} onValueChange={setTimeFilter}>
-                    <SelectTrigger className="w-[130px]">
-                      <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <SelectValue placeholder="Time period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All time</SelectItem>
-                      <SelectItem value="month">Past month</SelectItem>
-                      <SelectItem value="year">Past year</SelectItem>
-                    </SelectContent>
-                  </Select>
+            {filteredDonations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                {searchQuery || timeFilter !== "all" ? (
+                  <>
+                    <div className="rounded-full bg-muted/30 p-6 mb-4">
+                      <Search className="h-10 w-10 text-muted-foreground/50" />
+                    </div>
+                    <h3 className="text-xl font-medium">No donations found</h3>
+                    <p className="text-muted-foreground mt-2 max-w-md">
+                      {`We couldn't find any donations matching your search criteria. Try adjusting your filters.`}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => {
+                        setSearchQuery("")
+                        setTimeFilter("all")
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-full bg-muted/30 p-6 mb-4">
+                      <Trophy className="h-10 w-10 text-muted-foreground/50" />
+                    </div>
+                    <h3 className="text-xl font-medium">{`You haven't made any donations yet`}</h3>
+                    <p className="text-muted-foreground mt-2 max-w-md">
+                      Explore fundraisers and make an impact! Your donations will appear here.
+                    </p>
+                    <Button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white" asChild>
+                      <Link href="/browse-fundraisers">Browse Fundraisers</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-muted/20">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Fundraiser
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Amount
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      {filteredDonations.map((donation) => (
+                        <tr key={donation.id} className="hover:bg-muted/10 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Link
+                              href={`/fundraiser/${donation.fundraiserId}`}
+                              className="text-sm font-medium hover:text-purple-500 transition-colors"
+                            >
+                              {donation.fundraiserTitle}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <span className="text-sm font-medium">{formatCurrency(donation.amount)}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <span className="text-sm text-muted-foreground">{formatDate(donation.date)}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                                  donation.status === "Confirmed"
+                                    ? "bg-green-500/10 text-green-500"
+                                    : "bg-yellow-500/10 text-yellow-500",
+                                )}
+                              >
+                                {donation.status}
+                              </span>
+                              <a
+                                href={`https://explorer.solana.com/tx/${donation.transactionHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                <span className="sr-only">View transaction</span>
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            )}
+          </div>
+        </TabsContent>
 
-              {filteredDonations.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  {searchQuery || timeFilter !== "all" ? (
-                    <>
-                      <div className="rounded-full bg-muted/30 p-6 mb-4">
-                        <Search className="h-10 w-10 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="text-xl font-medium">No donations found</h3>
-                      <p className="text-muted-foreground mt-2 max-w-md">
-                        {`We couldn't find any donations matching your search criteria. Try adjusting your filters.`}
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={() => {
-                          setSearchQuery("")
-                          setTimeFilter("all")
-                        }}
-                      >
-                        Clear filters
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="rounded-full bg-muted/30 p-6 mb-4">
-                        <Trophy className="h-10 w-10 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="text-xl font-medium">{`You haven't made any donations yet`}</h3>
-                      <p className="text-muted-foreground mt-2 max-w-md">
-                        Explore fundraisers and make an impact! Your donations will appear here.
-                      </p>
-                      <Button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white" asChild>
-                        <Link href="/browse-fundraisers">Browse Fundraisers</Link>
-                      </Button>
-                    </>
-                  )}
+        <TabsContent value="fundraisers" className="space-y-8">
+          {/* Overview Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
+              <p className="text-sm text-muted-foreground">Total Raised (USD)</p>
+              <p className="text-3xl font-bold text-purple-500">{formatCurrency(totalRaised)}</p>
+            </div>
+
+            <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
+              <p className="text-sm text-muted-foreground">Total Supporters</p>
+              <div className="flex items-center gap-2">
+                <Users className="h-6 w-6 text-muted-foreground" />
+                <p className="text-3xl font-bold">{totalSupporters}</p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
+              <p className="text-sm text-muted-foreground">Active Campaigns</p>
+              <p className="text-3xl font-bold">{activeCampaigns}</p>
+            </div>
+          </div>
+
+          {/* Your Fundraisers Section */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h2 className="text-xl font-semibold">Your Fundraisers</h2>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:flex-none sm:w-64">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search fundraisers..."
+                    className="pl-9 bg-background border-border/50 h-10"
+                    value={fundraiserSearchQuery}
+                    onChange={(e) => setFundraiserSearchQuery(e.target.value)}
+                  />
                 </div>
-              ) : (
-                <div className="rounded-lg border border-border/50 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-muted/20">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Fundraiser
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Amount
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/30">
-                        {filteredDonations.map((donation) => (
-                          <tr key={donation.id} className="hover:bg-muted/10 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap">
+
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="ended">Ended</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {filteredFundraisers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                {fundraiserSearchQuery || statusFilter !== "all" ? (
+                  <>
+                    <div className="rounded-full bg-muted/30 p-6 mb-4">
+                      <Search className="h-10 w-10 text-muted-foreground/50" />
+                    </div>
+                    <h3 className="text-xl font-medium">No fundraisers found</h3>
+                    <p className="text-muted-foreground mt-2 max-w-md">
+                      {`We couldn't find any fundraisers matching your search criteria. Try adjusting your filters.`}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => {
+                        setFundraiserSearchQuery("")
+                        setStatusFilter("all")
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-full bg-muted/30 p-6 mb-4">
+                      <Plus className="h-10 w-10 text-muted-foreground/50" />
+                    </div>
+                    <h3 className="text-xl font-medium">{`You haven't created any fundraisers yet`}</h3>
+                    <p className="text-muted-foreground mt-2 max-w-md">
+                      Ready to start a campaign? Create your first fundraiser and begin making an impact.
+                    </p>
+                    <Button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white" asChild>
+                      <Link href="/fundraisers/create">Create New Fundraiser</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-muted/20">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Fundraiser
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Progress
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Supporters
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Time Left
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      {filteredFundraisers.map((fundraiser) => {
+                        const percentFunded = Math.min(
+                          100,
+                          Math.round((fundraiser.amountRaised / fundraiser.goalAmount) * 100),
+                        )
+
+                        return (
+                          <tr key={fundraiser.id} className="hover:bg-muted/10 transition-colors">
+                            <td className="px-6 py-4">
                               <Link
-                                href={`/fundraiser/${donation.fundraiserId}`}
+                                href={`/fundraiser/${fundraiser.id}`}
                                 className="text-sm font-medium hover:text-purple-500 transition-colors"
                               >
-                                {donation.fundraiserTitle}
+                                {fundraiser.title}
                               </Link>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <span className="text-sm font-medium">{formatCurrency(donation.amount)}</span>
+                            <td className="px-6 py-4">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                                  getStatusColor(fundraiser.status),
+                                )}
+                              >
+                                {fundraiser.status}
+                              </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <span className="text-sm text-muted-foreground">{formatDate(donation.date)}</span>
+                            <td className="px-6 py-4">
+                              <div className="space-y-1 max-w-[200px]">
+                                <div className="h-2 w-full rounded-full bg-muted/50">
+                                  <div
+                                    className="h-full rounded-full bg-purple-500"
+                                    style={{ width: `${percentFunded}%` }}
+                                  ></div>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="font-medium">{percentFunded}%</span>
+                                  <span className="text-muted-foreground">
+                                    {formatCurrency(fundraiser.amountRaised)} /{" "}
+                                    {formatCurrency(fundraiser.goalAmount)}
+                                  </span>
+                                </div>
+                              </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <td className="px-6 py-4 text-center">
+                              <div className="flex flex-col items-center">
+                                <span className="text-sm font-medium">{fundraiser.supportersCount}</span>
+                                <span className="text-xs text-muted-foreground">supporters</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {fundraiser.status === "Active" && fundraiser.daysLeft !== null ? (
+                                <div className="flex flex-col items-center">
+                                  <span className="text-sm font-medium">{fundraiser.daysLeft}</span>
+                                  <span className="text-xs text-muted-foreground">days left</span>
+                                </div>
+                              ) : fundraiser.status === "Draft" ? (
+                                <span className="text-xs text-muted-foreground">Not launched</span>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">Campaign ended</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-right">
                               <div className="flex items-center justify-end space-x-2">
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                                    donation.status === "Confirmed"
-                                      ? "bg-green-500/10 text-green-500"
-                                      : "bg-yellow-500/10 text-yellow-500",
-                                  )}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  asChild
+                                  title="View Public Page"
                                 >
-                                  {donation.status}
-                                </span>
-                                <a
-                                  href={`https://explorer.solana.com/tx/${donation.transactionHash}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-muted-foreground hover:text-foreground transition-colors"
+                                  <Link href={`/fundraiser/${fundraiser.id}`}>
+                                    <Eye className="h-4 w-4" />
+                                    <span className="sr-only">View</span>
+                                  </Link>
+                                </Button>
+
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  asChild
+                                  title="Edit Campaign"
+                                  disabled={fundraiser.status !== "Draft" && fundraiser.status !== "Active"}
                                 >
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                  <span className="sr-only">View transaction</span>
-                                </a>
+                                  <Link href={`/edit-fundraiser/${fundraiser.id}`}>
+                                    <Edit className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                  </Link>
+                                </Button>
+
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  title="View Supporters"
+                                  disabled={fundraiser.supportersCount === 0}
+                                  onClick={() => {
+                                    setSelectedFundraiser(fundraiser)
+                                    setShowSupportersModal(true)
+                                  }}
+                                >
+                                  <Users className="h-4 w-4" />
+                                  <span className="sr-only">Supporters</span>
+                                </Button>
+
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  asChild
+                                  title="Post Update"
+                                  disabled={fundraiser.status === "Draft"}
+                                >
+                                  <Link href={`/post-update/${fundraiser.id}`}>
+                                    <MessageSquare className="h-4 w-4" />
+                                    <span className="sr-only">Post Update</span>
+                                  </Link>
+                                </Button>
+
+                                {fundraiser.status === "Active" && (
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" title="Withdraw Funds">
+                                    <WalletIcon className="h-4 w-4" />
+                                    <span className="sr-only">Withdraw</span>
+                                  </Button>
+                                )}
                               </div>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="fundraisers" className="space-y-8">
-            {/* Overview Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
-                <p className="text-sm text-muted-foreground">Total Raised (USD)</p>
-                <p className="text-3xl font-bold text-purple-500">{formatCurrency(totalRaised)}</p>
-              </div>
-
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
-                <p className="text-sm text-muted-foreground">Total Supporters</p>
-                <div className="flex items-center gap-2">
-                  <Users className="h-6 w-6 text-muted-foreground" />
-                  <p className="text-3xl font-bold">{totalSupporters}</p>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            )}
+          </div>
 
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-2">
-                <p className="text-sm text-muted-foreground">Active Campaigns</p>
-                <p className="text-3xl font-bold">{activeCampaigns}</p>
+          {/* Recent Activity Feed */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Recent Activity</h2>
+
+            {mockActivities.length === 0 ? (
+              <div className="rounded-lg border border-border/50 bg-card p-6 text-center">
+                <p className="text-muted-foreground">No recent activity for your fundraisers.</p>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
+                <div className="divide-y divide-border/30">
+                  {mockActivities.slice(0, 5).map((activity) => {
+                    // Format the date to a relative time (e.g., "2 hours ago")
+                    const activityDate = new Date(activity.date)
+                    const now = new Date()
+                    const diffInHours = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60))
 
-            {/* Your Fundraisers Section */}
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl font-semibold">Your Fundraisers</h2>
+                    let timeAgo
+                    if (diffInHours < 1) {
+                      timeAgo = "Just now"
+                    } else if (diffInHours < 24) {
+                      timeAgo = `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`
+                    } else {
+                      const diffInDays = Math.floor(diffInHours / 24)
+                      timeAgo = `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`
+                    }
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-none sm:w-64">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search fundraisers..."
-                      className="pl-9 bg-background border-border/50 h-10"
-                      value={fundraiserSearchQuery}
-                      onChange={(e) => setFundraiserSearchQuery(e.target.value)}
-                    />
-                  </div>
-
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[130px]">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All statuses</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="ended">Ended</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {filteredFundraisers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  {fundraiserSearchQuery || statusFilter !== "all" ? (
-                    <>
-                      <div className="rounded-full bg-muted/30 p-6 mb-4">
-                        <Search className="h-10 w-10 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="text-xl font-medium">No fundraisers found</h3>
-                      <p className="text-muted-foreground mt-2 max-w-md">
-                        {`We couldn't find any fundraisers matching your search criteria. Try adjusting your filters.`}
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={() => {
-                          setFundraiserSearchQuery("")
-                          setStatusFilter("all")
-                        }}
-                      >
-                        Clear filters
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="rounded-full bg-muted/30 p-6 mb-4">
-                        <Plus className="h-10 w-10 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="text-xl font-medium">{`You haven't created any fundraisers yet`}</h3>
-                      <p className="text-muted-foreground mt-2 max-w-md">
-                        Ready to start a campaign? Create your first fundraiser and begin making an impact.
-                      </p>
-                      <Button className="mt-4 bg-purple-600 hover:bg-purple-700 text-white" asChild>
-                        <Link href="/fundraisers/create">Create New Fundraiser</Link>
-                      </Button>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-lg border border-border/50 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-muted/20">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Fundraiser
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Progress
-                          </th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Supporters
-                          </th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Time Left
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/30">
-                        {filteredFundraisers.map((fundraiser) => {
-                          const percentFunded = Math.min(
-                            100,
-                            Math.round((fundraiser.amountRaised / fundraiser.goalAmount) * 100),
-                          )
-
-                          return (
-                            <tr key={fundraiser.id} className="hover:bg-muted/10 transition-colors">
-                              <td className="px-6 py-4">
-                                <Link
-                                  href={`/fundraiser/${fundraiser.id}`}
-                                  className="text-sm font-medium hover:text-purple-500 transition-colors"
-                                >
-                                  {fundraiser.title}
-                                </Link>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                                    getStatusColor(fundraiser.status),
-                                  )}
-                                >
-                                  {fundraiser.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="space-y-1 max-w-[200px]">
-                                  <div className="h-2 w-full rounded-full bg-muted/50">
-                                    <div
-                                      className="h-full rounded-full bg-purple-500"
-                                      style={{ width: `${percentFunded}%` }}
-                                    ></div>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span className="font-medium">{percentFunded}%</span>
-                                    <span className="text-muted-foreground">
-                                      {formatCurrency(fundraiser.amountRaised)} /{" "}
-                                      {formatCurrency(fundraiser.goalAmount)}
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 text-center">
-                                <div className="flex flex-col items-center">
-                                  <span className="text-sm font-medium">{fundraiser.supportersCount}</span>
-                                  <span className="text-xs text-muted-foreground">supporters</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 text-center">
-                                {fundraiser.status === "Active" && fundraiser.daysLeft !== null ? (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-sm font-medium">{fundraiser.daysLeft}</span>
-                                    <span className="text-xs text-muted-foreground">days left</span>
-                                  </div>
-                                ) : fundraiser.status === "Draft" ? (
-                                  <span className="text-xs text-muted-foreground">Not launched</span>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">Campaign ended</span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <div className="flex items-center justify-end space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    asChild
-                                    title="View Public Page"
-                                  >
-                                    <Link href={`/fundraiser/${fundraiser.id}`}>
-                                      <Eye className="h-4 w-4" />
-                                      <span className="sr-only">View</span>
-                                    </Link>
-                                  </Button>
-
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    asChild
-                                    title="Edit Campaign"
-                                    disabled={fundraiser.status !== "Draft" && fundraiser.status !== "Active"}
-                                  >
-                                    <Link href={`/edit-fundraiser/${fundraiser.id}`}>
-                                      <Edit className="h-4 w-4" />
-                                      <span className="sr-only">Edit</span>
-                                    </Link>
-                                  </Button>
-
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    title="View Supporters"
-                                    disabled={fundraiser.supportersCount === 0}
-                                    onClick={() => {
-                                      setSelectedFundraiser(fundraiser)
-                                      setShowSupportersModal(true)
-                                    }}
-                                  >
-                                    <Users className="h-4 w-4" />
-                                    <span className="sr-only">Supporters</span>
-                                  </Button>
-
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    asChild
-                                    title="Post Update"
-                                    disabled={fundraiser.status === "Draft"}
-                                  >
-                                    <Link href={`/post-update/${fundraiser.id}`}>
-                                      <MessageSquare className="h-4 w-4" />
-                                      <span className="sr-only">Post Update</span>
-                                    </Link>
-                                  </Button>
-
-                                  {fundraiser.status === "Active" && (
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" title="Withdraw Funds">
-                                      <WalletIcon className="h-4 w-4" />
-                                      <span className="sr-only">Withdraw</span>
-                                    </Button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activity Feed */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Recent Activity</h2>
-
-              {mockActivities.length === 0 ? (
-                <div className="rounded-lg border border-border/50 bg-card p-6 text-center">
-                  <p className="text-muted-foreground">No recent activity for your fundraisers.</p>
-                </div>
-              ) : (
-                <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
-                  <div className="divide-y divide-border/30">
-                    {mockActivities.slice(0, 5).map((activity) => {
-                      // Format the date to a relative time (e.g., "2 hours ago")
-                      const activityDate = new Date(activity.date)
-                      const now = new Date()
-                      const diffInHours = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60))
-
-                      let timeAgo
-                      if (diffInHours < 1) {
-                        timeAgo = "Just now"
-                      } else if (diffInHours < 24) {
-                        timeAgo = `${diffInHours} hour${diffInHours > 1 ? "s" : ""} ago`
-                      } else {
-                        const diffInDays = Math.floor(diffInHours / 24)
-                        timeAgo = `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`
-                      }
-
-                      return (
-                        <div key={activity.id} className="p-4 hover:bg-muted/10 transition-colors">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-1">
-                              <p className="text-sm">{activity.message}</p>
-                              <p className="text-xs text-muted-foreground">
-                                <Link
-                                  href={`/fundraiser/${activity.fundraiserId}`}
-                                  className="hover:text-purple-500 transition-colors"
-                                >
-                                  {activity.fundraiserTitle}
-                                </Link>
-                              </p>
-                            </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">{timeAgo}</span>
+                    return (
+                      <div key={activity.id} className="p-4 hover:bg-muted/10 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1">
+                            <p className="text-sm">{activity.message}</p>
+                            <p className="text-xs text-muted-foreground">
+                              <Link
+                                href={`/fundraiser/${activity.fundraiserId}`}
+                                className="hover:text-purple-500 transition-colors"
+                              >
+                                {activity.fundraiserTitle}
+                              </Link>
+                            </p>
                           </div>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">{timeAgo}</span>
                         </div>
-                      )
-                    })}
-                  </div>
-
-                  {mockActivities.length > 5 && (
-                    <div className="p-3 border-t border-border/30 bg-muted/5">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        View All Activity
-                      </Button>
-                    </div>
-                  )}
+                      </div>
+                    )
+                  })}
                 </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </ScrollArea>
+
+                {mockActivities.length > 5 && (
+                  <div className="p-3 border-t border-border/30 bg-muted/5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      View All Activity
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }

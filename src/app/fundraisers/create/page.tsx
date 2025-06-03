@@ -1,4 +1,4 @@
-import { CreateFundraiserForm } from "~/components/create-fundraiser-form-copy"
+import { CreateFundraiserForm } from "~/components/create-fundraiser-form"
 export default function CreateFundraiserPage() {
   return (
     <div className="container max-w-3xl py-8">

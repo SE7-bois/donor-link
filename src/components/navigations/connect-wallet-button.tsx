@@ -33,7 +33,6 @@ export default function ConnectWalletButton() {
             toast.error("Wallet Connection Error", {
                 description: error,
             });
-            console.error("Wallet error:", error);
         }
     }, [error]);
 
@@ -76,7 +75,6 @@ export default function ConnectWalletButton() {
                     });
                     toast.success("Wallet authenticated successfully!");
                 } catch (convexError) {
-                    console.error("Error saving user to Convex:", convexError);
                     toast.error("Authentication successful, but failed to save user data");
                 }
             } else {
@@ -99,7 +97,7 @@ export default function ConnectWalletButton() {
         try {
             setVisible(true);
         } catch (err) {
-            console.error("Error opening wallet modal:", err);
+            toast.error("Failed to open wallet modal");
         }
     };
 
@@ -109,7 +107,7 @@ export default function ConnectWalletButton() {
             disconnect();
             toast.success("Wallet disconnected");
         } catch (err) {
-            console.error("Error disconnecting:", err);
+            toast.error("Failed to disconnect wallet");
         }
     };
 

@@ -81,6 +81,11 @@ export const getMyProfile = query({
       wallet_address: user.wallet_address,
       created_at: user.created_at,
       last_login_at: user.last_login_at,
+      display_name: user.display_name,
+      bio: user.bio,
+      website: user.website,
+      twitter: user.twitter,
+      profile_image: user.profile_image,
       // Don't return sensitive fields like nonce
     };
   },
@@ -90,6 +95,11 @@ export const getMyProfile = query({
 export const updateProfile = mutation({
   args: {
     wallet_address: v.string(),
+    display_name: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    website: v.optional(v.string()),
+    twitter: v.optional(v.string()),
+    profile_image: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -101,8 +111,18 @@ export const updateProfile = mutation({
       throw new Error("User not found");
     }
 
-    // For now, just return success since there are no fields to update
-    // You can add other profile fields later if needed
+    // Build update object with only provided fields
+    const updateData: any = {};
+
+    if (args.display_name !== undefined) updateData.display_name = args.display_name;
+    if (args.bio !== undefined) updateData.bio = args.bio;
+    if (args.website !== undefined) updateData.website = args.website;
+    if (args.twitter !== undefined) updateData.twitter = args.twitter;
+    if (args.profile_image !== undefined) updateData.profile_image = args.profile_image;
+
+    // Update the user profile
+    await ctx.db.patch(user._id, updateData);
+
     return "Profile updated successfully";
   },
 }); 
