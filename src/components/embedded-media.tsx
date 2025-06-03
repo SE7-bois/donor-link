@@ -17,7 +17,17 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
 
-  const activeMedia = media[activeIndex]
+  // Handle undefined or empty media array
+  if (!media || media.length === 0) {
+    return (
+      <div className={cn("relative rounded-md overflow-hidden my-4 flex items-center justify-center aspect-video bg-muted/30", className)}>
+        <span className="text-muted-foreground text-center">No media available</span>
+      </div>
+    )
+  }
+
+  // Defensive: If activeIndex is out of bounds, reset to 0
+  const activeMedia = media[activeIndex] ?? media[0]
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen)
@@ -28,13 +38,13 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
   }
 
   // For a single image, render it directly
-  if (media.length === 1 && media[0].type === "image") {
+  if (media.length === 1 && media[0]?.type === "image") {
     return (
       <div className={cn("relative rounded-md overflow-hidden my-4", className)}>
         <div className="relative aspect-video">
           <Image
-            src={media[0].url || "/placeholder.svg"}
-            alt={media[0].alt || "Update media"}
+            src={media[0]?.url || "/placeholder.svg"}
+            alt={media[0]?.alt || "Update media"}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 600px"
@@ -54,16 +64,16 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
   }
 
   // For a single video, render it directly
-  if (media.length === 1 && media[0].type === "video") {
+  if (media.length === 1 && media[0]?.type === "video") {
     return (
       <div className={cn("relative rounded-md overflow-hidden my-4", className)}>
         <div className="relative aspect-video">
           <video
-            src={media[0].url}
+            src={media[0]?.url}
             className="w-full h-full object-cover"
             controls
             controlsList="nodownload"
-            poster={media[0].thumbnail}
+            poster={media[0]?.thumbnail}
           />
         </div>
       </div>
@@ -122,7 +132,7 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
       </div>
 
       {/* Fullscreen Modal */}
-      {isFullscreen && (
+      {isFullscreen && activeMedia && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm">
           <Button
             variant="ghost"
@@ -135,11 +145,11 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
           </Button>
 
           <div className="relative w-full max-w-6xl max-h-[90vh] aspect-video">
-            {activeMedia.type === "image" ? (
+            {activeMedia?.type === "image" ? (
               <div className="relative w-full h-full">
                 <Image
-                  src={activeMedia.url || "/placeholder.svg"}
-                  alt={activeMedia.alt || "Update media"}
+                  src={activeMedia?.url || "/placeholder.svg"}
+                  alt={activeMedia?.alt || "Update media"}
                   fill
                   className="object-contain"
                   sizes="(max-width: 1200px) 100vw, 1200px"
@@ -148,11 +158,11 @@ export function EmbeddedMedia({ media, className }: EmbeddedMediaProps) {
               </div>
             ) : (
               <video
-                src={activeMedia.url}
+                src={activeMedia?.url}
                 className="w-full h-full object-contain"
                 controls
                 controlsList="nodownload"
-                poster={activeMedia.thumbnail}
+                poster={activeMedia?.thumbnail}
                 autoPlay
               />
             )}

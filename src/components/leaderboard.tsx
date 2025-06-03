@@ -53,8 +53,8 @@ const generateMockDonors = (count: number): Donor[] => {
 const mockDonors: Donor[] = generateMockDonors(100)
 
 // This would be the connected user's wallet address in a real application
-// Set the user to be rank #7 for demonstration purposes
-const currentUserWalletAddress = mockDonors[6].walletAddress
+// Set the user to be rank #32 for demonstration purposes
+const currentUserWalletAddress = mockDonors[33]?.walletAddress ?? ""
 
 export function Leaderboard() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -134,24 +134,33 @@ export function Leaderboard() {
   }
 
   // Find the currentUserDonor from the full list of donors
-  const currentUserDonor = filteredDonors.find((donor) => donor.walletAddress === currentUserWalletAddress)
+  const currentUserDonor = currentUserWalletAddress
+    ? filteredDonors.find((donor) => donor.walletAddress === currentUserWalletAddress)
+    : undefined
 
   // Check if the current user is visible on the current page
-  const isCurrentUserVisible = currentDonors.some((donor) => donor.walletAddress === currentUserWalletAddress)
+  const isCurrentUserVisible = currentUserWalletAddress
+    ? currentDonors.some((donor) => donor.walletAddress === currentUserWalletAddress)
+    : false
 
   // Determine if user should be shown at top or bottom
   const showUserAtTop =
-    currentUserDonor &&
+    !!currentUserDonor &&
     !isCurrentUserVisible &&
     currentDonors.length > 0 &&
+    typeof currentUserDonor.rank === "number" &&
+    typeof currentDonors[0]?.rank === "number" &&
     currentUserDonor.rank < currentDonors[0].rank
 
   // Determine if user should be shown at bottom
   const showUserAtBottom =
-    currentUserDonor &&
+    !!currentUserDonor &&
     !isCurrentUserVisible &&
     currentDonors.length > 0 &&
-    currentUserDonor.rank > currentDonors[currentDonors.length - 1].rank
+    typeof currentUserDonor.rank === "number" &&
+    typeof currentDonors[currentDonors.length - 1]?.rank === "number" &&
+    currentUserDonor.rank > (currentDonors[currentDonors.length - 1]?.rank ?? 0)
+
 
   // Function to render user row
   const renderUserRow = () => {
