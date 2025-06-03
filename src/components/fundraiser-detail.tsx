@@ -3,6 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { useWallet } from "@solana/wallet-adapter-react"
 import {
   ArrowLeft,
   Calendar,
@@ -21,9 +23,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { Separator } from "~/components/ui/separator"
-import { MediaGallery } from "~/components/media-gallery"
-import { EmbeddedMedia } from "~/components/embedded-media"
+
 import { SupportersModal } from "~/components/supporters-modal"
+import { MarkdownContent } from "~/components/markdown-content"
+import { useQuery } from "convex/react"
+import { api } from "../../convex/_generated/api"
+import type { Id } from "../../convex/_generated/dataModel"
 
 // Mock fundraiser data with enhanced media
 const fundraiser = {
@@ -74,44 +79,47 @@ const fundraiser = {
       alt: "Students working on a group project",
     },
   ],
-  description: `
-    <h2>About This Project</h2>
-    <p>We're on a mission to bridge the digital divide by providing comprehensive coding education to underprivileged youth in urban areas. Our 12-week bootcamp program is designed to equip students with the skills they need to pursue careers in technology.</p>
-    
-    <h2>The Problem</h2>
-    <p>Despite the growing demand for tech talent, many young people from disadvantaged backgrounds lack access to quality coding education. This perpetuates inequality and prevents talented individuals from reaching their potential.</p>
-    
-    <h2>Our Solution</h2>
-    <p>Our intensive bootcamp covers:</p>
-    <ul>
-      <li>Web development fundamentals (HTML, CSS, JavaScript)</li>
-      <li>Modern frameworks and libraries (React, Node.js)</li>
-      <li>Database design and management</li>
-      <li>Blockchain development basics</li>
-      <li>Professional development and job placement assistance</li>
-    </ul>
-    
-    <h2>Impact</h2>
-    <p>With your support, we can:</p>
-    <ul>
-      <li>Provide scholarships for 20 students</li>
-      <li>Cover the cost of equipment and learning materials</li>
-      <li>Secure experienced instructors and mentors</li>
-      <li>Offer post-program career support</li>
-    </ul>
-    
-    <h2>Timeline</h2>
-    <p>January 2026: Student selection process</p>
-    <p>February 2026: Bootcamp begins</p>
-    <p>May 2026: Graduation and demo day</p>
-    <p>June 2026: Job placement support</p>
-    
-    <h2>About Us</h2>
-    <p>The Tech Education Foundation is a non-profit organization dedicated to making technology education accessible to all. We've successfully run similar programs in the past, with over 85% of our graduates securing jobs in the tech industry within 6 months of completion.</p>
-    
-    <h2>Thank You</h2>
-    <p>Your contribution, no matter the size, will help change lives by opening doors to lucrative and fulfilling careers in technology. Thank you for your support!</p>
-  `,
+  description: `## About This Project
+
+We're on a mission to bridge the digital divide by providing comprehensive coding education to underprivileged youth in urban areas. Our 12-week bootcamp program is designed to equip students with the skills they need to pursue careers in technology.
+
+## The Problem
+
+Despite the growing demand for tech talent, many young people from disadvantaged backgrounds lack access to quality coding education. This perpetuates inequality and prevents talented individuals from reaching their potential.
+
+## Our Solution
+
+Our intensive bootcamp covers:
+
+- Web development fundamentals (HTML, CSS, JavaScript)
+- Modern frameworks and libraries (React, Node.js)
+- Database design and management
+- Blockchain development basics
+- Professional development and job placement assistance
+
+## Impact
+
+With your support, we can:
+
+- Provide scholarships for 20 students
+- Cover the cost of equipment and learning materials
+- Secure experienced instructors and mentors
+- Offer post-program career support
+
+## Timeline
+
+**January 2026:** Student selection process  
+**February 2026:** Bootcamp begins  
+**May 2026:** Graduation and demo day  
+**June 2026:** Job placement support
+
+## About Us
+
+The Tech Education Foundation is a non-profit organization dedicated to making technology education accessible to all. We've successfully run similar programs in the past, with over **85% of our graduates** securing jobs in the tech industry within 6 months of completion.
+
+## Thank You
+
+Your contribution, no matter the size, will help change lives by opening doors to lucrative and fulfilling careers in technology. Thank you for your support!`,
   updates: [
     {
       id: "1",
@@ -379,16 +387,70 @@ const fundraiser = {
 
 export function FundraiserDetail() {
   const params = useParams()
+  const { data: session } = useSession()
+  const { publicKey } = useWallet()
   const fundraiserId = params?.id as string
 
-  // Add a console log to help with debugging
-  console.log("Fundraiser ID:", fundraiserId)
+  // Fetch fundraiser data from Convex
+  const fundraiser = useQuery(
+    api.fundraisers.getFundraiser,
+    fundraiserId ? {
+      fundraiser_id: fundraiserId as Id<"fundraisers">,
+      viewer_wallet_address: publicKey?.toBase58()
+    } : "skip"
+  )
+
+  // Fetch recent supporters for this fundraiser
+  const recentSupporters = useQuery(
+    api.donations.getRecentSupporters,
+    fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers">, limit: 5 } : "skip"
+  )
+
+  // Fetch all supporters for the modal
+  const allSupporters = useQuery(
+    api.donations.getAllSupporters,
+    fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
+  )
+
+  // Fetch fundraiser stats
+  const stats = useQuery(
+    api.donations.getFundraiserStats,
+    fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
+  )
 
   const [donationAmount, setDonationAmount] = useState("")
   const [stablecoin, setStablecoin] = useState("USDC")
   const [copiedAddress, setCopiedAddress] = useState(false)
   const [showAllUpdates, setShowAllUpdates] = useState(false)
   const [isSupportersModalOpen, setIsSupportersModalOpen] = useState(false)
+
+  // Loading state
+  if (!fundraiser || !stats) {
+    return (
+      <div className="container py-6 md:py-10">
+        <div className="animate-pulse space-y-8">
+          <div className="h-8 bg-muted/30 rounded w-1/3"></div>
+          <div className="h-12 bg-muted/30 rounded w-2/3"></div>
+          <div className="h-64 bg-muted/30 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (!fundraiser) {
+    return (
+      <div className="container py-6 md:py-10">
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-bold">Fundraiser not found</h2>
+          <p className="text-muted-foreground mt-2">This fundraiser may have been removed or the link is invalid.</p>
+          <Button asChild className="mt-4">
+            <Link href="/fundraisers">Back to Fundraisers</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   // Function to truncate wallet address
   const truncateAddress = (address: string) => {
@@ -417,13 +479,19 @@ export function FundraiserDetail() {
     alert(`Donating ${donationAmount} ${stablecoin}`)
   }
 
-  // Parse HTML content
-  const createMarkup = (html: string) => {
-    return { __html: html }
+  // Format date
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
   }
 
-  // Display limited updates or all updates
-  const displayedUpdates = showAllUpdates ? fundraiser.updates : fundraiser.updates.slice(0, 2)
+  // Get displayed updates (show first 2 by default)
+  const displayedUpdates = showAllUpdates
+    ? (fundraiser.updates || [])
+    : (fundraiser.updates || []).slice(0, 2)
 
   return (
     <>
@@ -432,7 +500,7 @@ export function FundraiserDetail() {
           {/* Back button */}
           <div className="mb-6">
             <Button variant="ghost" size="sm" asChild className="gap-1 text-muted-foreground hover:text-foreground">
-              <Link href="/browse-fundraisers">
+              <Link href="/fundraisers">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Fundraisers
               </Link>
@@ -448,7 +516,9 @@ export function FundraiserDetail() {
                   {fundraiser.category}
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight">{fundraiser.title}</h1>
-                <p className="text-muted-foreground">{fundraiser.tagline}</p>
+                {fundraiser.tagline && (
+                  <p className="text-muted-foreground">{fundraiser.tagline}</p>
+                )}
 
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <span>Created by</span>
@@ -466,51 +536,66 @@ export function FundraiserDetail() {
               </div>
 
               {/* Enhanced Media Gallery */}
-              <MediaGallery media={fundraiser.media} />
+              {fundraiser.media && fundraiser.media.length > 0 && (
+                <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+                  <p className="text-sm text-muted-foreground">Media gallery coming soon...</p>
+                </div>
+              )}
 
               {/* Tabs for Description and Updates */}
               <Tabs defaultValue="description" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="description">Description</TabsTrigger>
-                  <TabsTrigger value="updates">Updates ({fundraiser.updates.length})</TabsTrigger>
+                  <TabsTrigger value="updates">
+                    Updates ({fundraiser.updates ? fundraiser.updates.length : 0})
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="description" className="pt-4">
-                  <div
-                    className="prose prose-invert max-w-none"
-                    dangerouslySetInnerHTML={createMarkup(fundraiser.description)}
-                  ></div>
+                  <MarkdownContent content={fundraiser.description} />
                 </TabsContent>
                 <TabsContent value="updates" className="pt-4 space-y-6">
-                  {displayedUpdates.map((update) => (
-                    <div key={update.id} className="space-y-2 pb-6 border-b border-border/50 last:border-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium">{update.title}</h3>
-                        <span className="text-xs text-muted-foreground">{update.date}</span>
-                      </div>
-                      <p className="text-muted-foreground">{update.content}</p>
+                  {fundraiser.updates && fundraiser.updates.length > 0 ? (
+                    <>
+                      {displayedUpdates.map((update: any) => (
+                        <div key={update.id} className="space-y-2 pb-6 border-b border-border/50 last:border-0">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-medium">{update.title}</h3>
+                            <span className="text-xs text-muted-foreground">{update.date}</span>
+                          </div>
+                          <MarkdownContent content={update.content} />
 
-                      {/* Embedded Media in Updates */}
-                      {update.media && update.media.length > 0 && <EmbeddedMedia media={update.media} />}
-                    </div>
-                  ))}
+                          {/* Embedded Media in Updates */}
+                          {update.media && update.media.length > 0 && (
+                            <div className="rounded-lg border border-border/50 bg-muted/20 p-4">
+                              <p className="text-sm text-muted-foreground">Update media coming soon...</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
 
-                  {fundraiser.updates.length > 2 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAllUpdates(!showAllUpdates)}
-                      className="w-full text-muted-foreground hover:text-foreground"
-                    >
-                      {showAllUpdates ? (
-                        <>
-                          Show Less <ChevronUp className="ml-2 h-4 w-4" />
-                        </>
-                      ) : (
-                        <>
-                          Show All Updates <ChevronDown className="ml-2 h-4 w-4" />
-                        </>
+                      {fundraiser.updates.length > 2 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowAllUpdates(!showAllUpdates)}
+                          className="w-full text-muted-foreground hover:text-foreground"
+                        >
+                          {showAllUpdates ? (
+                            <>
+                              Show Less <ChevronUp className="ml-2 h-4 w-4" />
+                            </>
+                          ) : (
+                            <>
+                              Show All Updates <ChevronDown className="ml-2 h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
                       )}
-                    </Button>
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No updates yet.</p>
+                    </div>
                   )}
                 </TabsContent>
               </Tabs>
@@ -536,7 +621,7 @@ export function FundraiserDetail() {
                     <div className="h-2 w-full rounded-full bg-muted/50">
                       <div
                         className="h-full rounded-full bg-purple-500"
-                        style={{ width: `${fundraiser.percentFunded}%` }}
+                        style={{ width: `${Math.min(fundraiser.percentFunded, 100)}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -550,7 +635,7 @@ export function FundraiserDetail() {
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/20">
                       <Users className="h-4 w-4 text-muted-foreground mb-1" />
-                      <span className="font-medium">{fundraiser.donorsCount}</span>
+                      <span className="font-medium">{stats.total_donors}</span>
                       <span className="text-xs text-muted-foreground">Supporters</span>
                       {/* View All Supporters Button - Subtle link below the supporters count */}
                       <button
@@ -562,7 +647,7 @@ export function FundraiserDetail() {
                     </div>
                     <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/20">
                       <Clock className="h-4 w-4 text-muted-foreground mb-1" />
-                      <span className="font-medium">{fundraiser.daysLeft}</span>
+                      <span className="font-medium">{fundraiser.daysLeft || "∞"}</span>
                       <span className="text-xs text-muted-foreground">Days Left</span>
                     </div>
                   </div>
@@ -570,7 +655,9 @@ export function FundraiserDetail() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1.5" />
-                      <span>Ends {fundraiser.endDate}</span>
+                      <span>
+                        {fundraiser.endDate ? `Ends ${fundraiser.endDate}` : "No end date"}
+                      </span>
                     </div>
                     <div className="flex space-x-2">
                       <button className="text-muted-foreground hover:text-foreground transition-colors">
@@ -663,18 +750,24 @@ export function FundraiserDetail() {
                   </div>
 
                   <div className="space-y-3">
-                    {fundraiser.recentDonors.map((donor, index) => (
-                      <div key={donor.id} className="flex justify-between items-center text-sm">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-6 w-6 rounded-full bg-muted/50"></div>
-                          <span>{truncateAddress(donor.address)}</span>
+                    {recentSupporters && recentSupporters.length > 0 ? (
+                      recentSupporters.map((supporter) => (
+                        <div key={supporter.id} className="flex justify-between items-center text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="h-6 w-6 rounded-full bg-muted/50"></div>
+                            <span>{supporter.display_name || truncateAddress(supporter.address)}</span>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="font-medium">{supporter.amount} SOL</span>
+                            <span className="text-xs text-muted-foreground">{supporter.timestamp}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col items-end">
-                          <span className="font-medium">{donor.amount} SOL</span>
-                          <span className="text-xs text-muted-foreground">{donor.timestamp}</span>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-muted-foreground">No supporters yet.</p>
                       </div>
-                    ))}
+                    )}
                   </div>
 
                   <Separator />
@@ -701,7 +794,7 @@ export function FundraiserDetail() {
         isOpen={isSupportersModalOpen}
         onClose={() => setIsSupportersModalOpen(false)}
         fundraiserTitle={fundraiser.title}
-        supporters={fundraiser.allSupporters}
+        supporters={allSupporters || []}
       />
     </>
   )

@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link"
 import { ArrowRight, Compass, Heart, Shield, Wallet } from "lucide-react"
 import { Button } from "~/components/ui/button"
+import { useQuery } from "convex/react"
+import { api } from "../../convex/_generated/api"
 
 export default function Home() {
   return (
@@ -158,36 +162,47 @@ export function HowItWorksSection() {
 }
 
 function FeaturedFundraisersSection() {
+  const fundraisers = useQuery(api.fundraisers.getPublicFundraisers);
 
-  const fundraisers = [
-    {
-      id: 1,
-      title: "Coding Bootcamp for Underprivileged Youth",
-      category: "Education",
-      description: "Help provide coding education to underprivileged youth in urban areas, opening doors to tech careers.",
-      amountRaised: 3200,
-      totalAmount: 5000,
-      imageUrl: "/images/fundraiser1.jpg",
-    },
-    {
-      id: 2,
-      title: "Renewable Energy for Rural Schools",
-      category: "Environment",
-      description: "Installing solar panels in rural schools to provide sustainable electricity for education.",
-      amountRaised: 8500,
-      totalAmount: 10000,
-      imageUrl: "/images/fundraiser2.jpg",
-    },
-    {
-      id: 3,
-      title: "Open Source Blockchain Development Tools",
-      category: "Technology & Open Source",
-      description: "Building developer tools to make blockchain development more accessible to everyone.",
-      amountRaised: 1200,
-      totalAmount: 3000,
-      imageUrl: "/images/fundraiser3.jpg",
-    },
-  ];
+  // Category mapping for display
+  const getCategoryFromTitle = (title: string) => {
+    if (title.toLowerCase().includes('garden')) return 'Environment';
+    if (title.toLowerCase().includes('medical')) return 'Healthcare';
+    if (title.toLowerCase().includes('school') || title.toLowerCase().includes('technology')) return 'Education';
+    if (title.toLowerCase().includes('animal') || title.toLowerCase().includes('shelter')) return 'Animal Welfare';
+    if (title.toLowerCase().includes('sports')) return 'Sports & Recreation';
+    return 'Community';
+  };
+
+  if (!fundraisers) {
+    return (
+      <section className="py-16 md:py-24 bg-muted/5">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">Featured Fundraisers</h2>
+            <p className="text-muted-foreground md:w-3/4 mx-auto">
+              Loading fundraisers...
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-lg border border-border/50 bg-card p-5">
+                <div className="space-y-3">
+                  <div className="h-40 rounded-md bg-muted/30 animate-pulse"></div>
+                  <div className="h-4 bg-muted/30 rounded animate-pulse"></div>
+                  <div className="h-6 bg-muted/30 rounded animate-pulse"></div>
+                  <div className="h-4 bg-muted/30 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show only first 3 fundraisers for the homepage
+  const featuredFundraisers = fundraisers.slice(0, 3);
 
   return (
     <section className="py-16 md:py-24 bg-muted/5">
@@ -200,12 +215,16 @@ function FeaturedFundraisersSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {fundraisers.map((fundraiser) => (
-            <div key={fundraiser.id} className="group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm">
+          {featuredFundraisers.map((fundraiser) => (
+            <Link
+              key={fundraiser._id}
+              href={`/fundraisers/${fundraiser._id}`}
+              className="block group rounded-lg border border-border/50 bg-card p-5 transition-all hover:border-purple-500/50 hover:shadow-sm"
+            >
               <div className="space-y-3">
                 <div className="h-40 rounded-md bg-muted/30"></div>
                 <div className="inline-block bg-purple-500/10 text-purple-500 px-2.5 py-0.5 rounded-full text-xs font-medium">
-                  {fundraiser.category}
+                  {getCategoryFromTitle(fundraiser.title)}
                 </div>
                 <div className="space-y-1.5">
                   <h3 className="font-semibold tracking-tight">{fundraiser.title}</h3>
@@ -215,15 +234,15 @@ function FeaturedFundraisersSection() {
                 </div>
                 <div className="space-y-2">
                   <div className="h-2 w-full rounded-full bg-muted/50">
-                    <div className="h-full rounded-full bg-purple-500" style={{ width: `${(fundraiser.amountRaised / fundraiser.totalAmount) * 100}%` }}></div>
+                    <div className="h-full rounded-full bg-purple-500" style={{ width: `${(fundraiser.current_amount / fundraiser.target_amount) * 100}%` }}></div>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="font-medium">{((fundraiser.amountRaised / fundraiser.totalAmount) * 100).toFixed(0)}% Funded</span>
-                    <span className="text-muted-foreground">{fundraiser.amountRaised} / {fundraiser.totalAmount} </span>
+                    <span className="font-medium">{((fundraiser.current_amount / fundraiser.target_amount) * 100).toFixed(0)}% Funded</span>
+                    <span className="text-muted-foreground">${fundraiser.current_amount.toLocaleString()} / ${fundraiser.target_amount.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

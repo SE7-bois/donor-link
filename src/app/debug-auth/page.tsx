@@ -7,12 +7,12 @@ import { SigninMessage } from "~/utils/SigninMessage";
 import bs58 from "bs58";
 import { useState } from "react";
 import { getCsrfToken } from "next-auth/react";
-
 export default function DebugAuthPage() {
   const { data: session, status } = useSession();
   const { connected, publicKey, wallet, signMessage } = useWallet();
   const [testResult, setTestResult] = useState<string>("");
   const [apiTestResult, setApiTestResult] = useState<string>("");
+
 
   const testSignature = async () => {
     if (!publicKey || !signMessage) {

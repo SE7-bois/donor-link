@@ -1,10 +1,10 @@
-import { FundraiserDetail } from "~/components/fundraiser-detail"
+import { FundraiserDetailSimple } from "~/components/fundraiser-detail-simple"
 import { AppShell } from "~/components/app-shell"
 
 export default function FundraiserDetailPage() {
   return (
     <AppShell>
-      <FundraiserDetail />
+      <FundraiserDetailSimple />
     </AppShell>
   )
 }

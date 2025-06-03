@@ -1,10 +1,10 @@
 import { AppShell } from "~/components/app-shell";
-import { Dashboard } from "~/components/dashboard";
+import { DashboardConvex } from "~/components/dashboard-convex";
 
 export default function DashboardPage() {
   return (
     <AppShell>
-      <Dashboard />
+      <DashboardConvex />
     </AppShell>
   );
 } 

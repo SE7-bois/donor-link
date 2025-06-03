@@ -38,26 +38,17 @@ export default function ConnectWalletButton() {
     }, [error]);
 
     const handleSignIn = useCallback(async () => {
-        console.log("🔐 Starting sign-in process...");
-        console.log("📝 Session status:", status);
-        console.log("🔗 Connected:", connected);
-        console.log("👛 PublicKey:", publicKey?.toBase58());
-
         try {
             if (!publicKey || !signMessage) {
-                console.error("❌ Wallet not ready for signing");
                 toast.error("Wallet not ready for signing");
                 return;
             }
 
-            console.log("🎫 Getting CSRF token...");
             const csrf = await getCsrfToken();
             if (!csrf) {
-                console.error("❌ Could not get CSRF token");
                 toast.error("Could not get CSRF token");
                 return;
             }
-            console.log("✅ CSRF token received:", csrf);
 
             const message = new SigninMessage({
                 domain: window.location.host,
@@ -66,87 +57,46 @@ export default function ConnectWalletButton() {
                 nonce: csrf,
             });
 
-            console.log("📄 Message created:", message);
-            console.log("📝 Message to sign:", message.prepare());
-
             const data = new TextEncoder().encode(message.prepare());
-            console.log("✍️ Requesting signature...");
-
             const signature = await signMessage(data);
             const serializedSignature = bs58.encode(signature);
-            console.log("✅ Signature received:", serializedSignature);
 
-            console.log("🔐 Attempting NextAuth sign-in...");
             const result = await signIn("credentials", {
                 message: JSON.stringify(message),
                 redirect: false,
                 signature: serializedSignature,
             });
 
-            console.log("📋 NextAuth result:", result);
-
             if (result?.ok) {
-                console.log("✅ NextAuth sign-in successful");
                 // Store user in Convex after successful authentication
                 try {
-                    console.log("💾 Saving user to Convex...");
                     await createOrUpdateUser({
                         wallet_address: publicKey.toBase58(),
                         nonce: csrf,
                     });
-                    console.log("✅ User saved to Convex successfully");
-                    toast.success("Wallet authenticated and user saved!");
+                    toast.success("Wallet authenticated successfully!");
                 } catch (convexError) {
-                    console.error("❌ Error saving user to Convex:", convexError);
+                    console.error("Error saving user to Convex:", convexError);
                     toast.error("Authentication successful, but failed to save user data");
                 }
             } else {
-                console.error("❌ NextAuth sign-in failed:", result);
-                console.error("🔍 Detailed error information:", {
-                    ok: result?.ok,
-                    error: result?.error,
-                    status: result?.status,
-                    url: result?.url,
-                    fullResult: result
-                });
-
-                // Try to make a direct call to check what's happening
-                try {
-                    const response = await fetch('/api/auth/providers');
-                    const providers = await response.json();
-                    console.log("🔍 Available providers:", providers);
-                } catch (providerError) {
-                    console.error("❌ Error checking providers:", providerError);
-                }
-
-                // Show detailed error
                 const errorMessage = result?.error || 'Unknown error';
-                const statusInfo = result?.status ? ` (Status: ${result.status})` : '';
-                toast.error(`Authentication failed: ${errorMessage}${statusInfo}`);
+                toast.error(`Authentication failed: ${errorMessage}`);
             }
         } catch (err) {
-            console.error("💥 Sign-in error:", err);
             toast.error(`Failed to sign in with wallet: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
     }, [publicKey, signMessage, createOrUpdateUser, status, connected]);
 
     // Handle wallet connection and authentication
     useEffect(() => {
-        console.log("🔄 Auth effect triggered:");
-        console.log("  - Wallet:", wallet?.adapter?.name);
-        console.log("  - Connected:", connected);
-        console.log("  - Session:", !!session);
-        console.log("  - Status:", status);
-
         if (wallet && connected && !session && status !== "loading") {
-            console.log("🚀 Triggering handleSignIn...");
             handleSignIn();
         }
     }, [wallet, connected, session, status, handleSignIn]);
 
     const handleConnect = () => {
         try {
-            console.log("🔗 Opening wallet selection modal");
             setVisible(true);
         } catch (err) {
             console.error("Error opening wallet modal:", err);
@@ -155,7 +105,6 @@ export default function ConnectWalletButton() {
 
     const handleDisconnect = async () => {
         try {
-            console.log("📤 Disconnecting wallet and signing out...");
             await signOut({ redirect: false });
             disconnect();
             toast.success("Wallet disconnected");

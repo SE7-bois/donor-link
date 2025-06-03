@@ -8,6 +8,7 @@ export const recordDonation = mutation({
     donor_wallet_address: v.string(),
     amount: v.number(),
     transaction_signature: v.string(),
+    donor_display_name: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Verify donor exists
@@ -32,6 +33,7 @@ export const recordDonation = mutation({
       donor_wallet_address: args.donor_wallet_address,
       amount: args.amount,
       transaction_signature: args.transaction_signature,
+      donor_display_name: args.donor_display_name,
       created_at: Date.now(),
     });
 
@@ -100,11 +102,27 @@ export const getFundraiserDonations = query({
       amount: donation.amount,
       created_at: donation.created_at,
       transaction_signature: donation.transaction_signature,
-      // DON'T return donor_wallet_address for privacy
-      donor_anonymized: `${donation.donor_wallet_address.slice(0, 6)}...${donation.donor_wallet_address.slice(-4)}`,
+      // Use display name if provided, otherwise anonymize wallet address
+      donor_display: donation.donor_display_name ||
+        `${donation.donor_wallet_address.slice(0, 6)}...${donation.donor_wallet_address.slice(-4)}`,
+      // For recent donors compatibility
+      id: donation._id,
+      address: donation.donor_wallet_address,
+      timestamp: formatTimeAgo(donation.created_at),
     }));
   },
 });
+
+// Helper function to format time ago
+function formatTimeAgo(timestamp: number): string {
+  const now = Date.now();
+  const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+  if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  return `${Math.floor(diffInSeconds / 86400)} days ago`;
+}
 
 // Get donation statistics for a fundraiser
 export const getFundraiserStats = query({
@@ -133,6 +151,53 @@ export const getFundraiserStats = query({
       total_donations: totalDonations,
       average_donation: totalDonations > 0 ? fundraiser.current_amount / totalDonations : 0,
     };
+  },
+});
+
+// Get recent supporters for a fundraiser (for the sidebar)
+export const getRecentSupporters = query({
+  args: {
+    fundraiser_id: v.id("fundraisers"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 5;
+
+    const donations = await ctx.db
+      .query("donations")
+      .withIndex("by_fundraiser", (q) => q.eq("fundraiser_id", args.fundraiser_id))
+      .order("desc")
+      .take(limit);
+
+    return donations.map((donation) => ({
+      id: donation._id,
+      address: donation.donor_wallet_address,
+      amount: donation.amount,
+      timestamp: formatTimeAgo(donation.created_at),
+      display_name: donation.donor_display_name,
+    }));
+  },
+});
+
+// Get all supporters for a fundraiser (for the modal)
+export const getAllSupporters = query({
+  args: {
+    fundraiser_id: v.id("fundraisers"),
+  },
+  handler: async (ctx, args) => {
+    const donations = await ctx.db
+      .query("donations")
+      .withIndex("by_fundraiser", (q) => q.eq("fundraiser_id", args.fundraiser_id))
+      .order("desc")
+      .collect();
+
+    return donations.map((donation) => ({
+      id: donation._id,
+      walletAddress: donation.donor_wallet_address,
+      amount: donation.amount,
+      timestamp: new Date(donation.created_at).toISOString(),
+      displayName: donation.donor_display_name,
+    }));
   },
 });
 

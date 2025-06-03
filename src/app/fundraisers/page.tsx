@@ -1,8 +1,9 @@
-import { getFundraisers } from "~/data/fundraisers";
-import { BrowseFundraisers } from "~/components/browse-fundraisers";
+"use client";
 
-export default async function FundraisersPage() {
-    const fundraisers = await getFundraisers();
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { BrowseFundraisersConvex } from "~/components/browse-fundraisers-convex";
 
-    return <BrowseFundraisers fundraisers={fundraisers} />
+export default function FundraisersPage() {
+    return <BrowseFundraisersConvex />
 }
