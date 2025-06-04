@@ -248,7 +248,7 @@ export function SupportersModal({ isOpen, onClose, fundraiserTitle, supporters }
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <span className="text-sm font-medium">{formatCurrency(supporter.amount * 100)}</span>
+                        <span className="text-sm font-medium">{formatCurrency(supporter.amount)}</span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
                         <span className="text-sm text-muted-foreground">{formatDate(supporter.timestamp)}</span>

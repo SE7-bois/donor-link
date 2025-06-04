@@ -97,35 +97,50 @@ export function MediaGallery({ media, className }: MediaGalleryProps) {
     }
   }, [activeIndex, activeMedia])
 
+  // Handle undefined or empty media array
+  if (!media || media.length === 0) {
+    return (
+      <div className={cn("relative rounded-lg overflow-hidden flex items-center justify-center aspect-video bg-muted/30", className)}>
+        <span className="text-muted-foreground text-center">No media available</span>
+      </div>
+    )
+  }
+
+  // Defensive: If activeIndex is out of bounds, reset to 0
+  if (!activeMedia) {
+    setActiveIndex(0)
+    return null
+  }
+
   return (
     <>
       <div className={cn("relative rounded-lg overflow-hidden", className)}>
         {/* Main Media Display */}
         <div className="relative aspect-video bg-muted/30 overflow-hidden">
-          {activeMedia.type === "image" ? (
+          {activeMedia?.type === "image" ? (
             <div className="relative w-full h-full">
               <Image
-                src={activeMedia.url || "/placeholder.svg"}
-                alt={activeMedia.alt || "Fundraiser media"}
+                src={activeMedia?.url || "/placeholder.svg"}
+                alt={activeMedia?.alt || "Fundraiser media"}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 800px"
                 priority={activeIndex === 0}
               />
             </div>
-          ) : (
+          ) : activeMedia?.type === "video" ? (
             <div className="relative w-full h-full">
               <video
                 ref={videoRef}
-                src={activeMedia.url}
+                src={activeMedia?.url}
                 className="w-full h-full object-cover"
                 controls
                 controlsList="nodownload"
-                poster={activeMedia.thumbnail}
+                poster={activeMedia?.thumbnail}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
               />
-              {!isPlaying && activeMedia.thumbnail && (
+              {!isPlaying && activeMedia?.thumbnail && (
                 <div
                   className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer"
                   onClick={togglePlay}
@@ -135,6 +150,10 @@ export function MediaGallery({ media, className }: MediaGalleryProps) {
                   </div>
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full">
+              <span className="text-muted-foreground">No media available</span>
             </div>
           )}
 
@@ -231,27 +250,31 @@ export function MediaGallery({ media, className }: MediaGalleryProps) {
           </Button>
 
           <div className="relative w-full max-w-6xl max-h-[90vh] aspect-video">
-            {activeMedia.type === "image" ? (
+            {activeMedia?.type === "image" ? (
               <div className="relative w-full h-full">
                 <Image
-                  src={activeMedia.url || "/placeholder.svg"}
-                  alt={activeMedia.alt || "Fundraiser media"}
+                  src={activeMedia?.url || "/placeholder.svg"}
+                  alt={activeMedia?.alt || "Fundraiser media"}
                   fill
                   className="object-contain"
                   sizes="(max-width: 1200px) 100vw, 1200px"
                   priority
                 />
               </div>
-            ) : (
+            ) : activeMedia?.type === "video" ? (
               <video
                 ref={videoRef}
-                src={activeMedia.url}
+                src={activeMedia?.url}
                 className="w-full h-full object-contain"
                 controls
                 controlsList="nodownload"
-                poster={activeMedia.thumbnail}
+                poster={activeMedia?.thumbnail}
                 autoPlay
               />
+            ) : (
+              <div className="flex items-center justify-center w-full h-full">
+                <span className="text-muted-foreground">No media available</span>
+              </div>
             )}
           </div>
 
