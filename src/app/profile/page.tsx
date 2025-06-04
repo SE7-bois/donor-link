@@ -173,10 +173,22 @@ export default function ProfilePage() {
   }
 
   const handleSaveProfile = async () => {
-    if (!userWalletAddress) return
+    if (!userWalletAddress) {
+      console.error("No wallet address available")
+      alert("Error: No wallet address available. Please connect your wallet.")
+      return
+    }
+
+    console.log("Updating profile for wallet:", userWalletAddress)
+    console.log("Profile data:", {
+      display_name: displayName.trim() || undefined,
+      bio: bio.trim() || undefined,
+      website: website.trim() || undefined,
+      twitter: twitter.trim() || undefined,
+    })
 
     try {
-      await updateProfile({
+      const result = await updateProfile({
         wallet_address: userWalletAddress,
         display_name: displayName.trim() || undefined,
         bio: bio.trim() || undefined,
@@ -184,6 +196,7 @@ export default function ProfilePage() {
         twitter: twitter.trim() || undefined,
       })
 
+      console.log("Profile update result:", result)
       setIsEditing(false)
 
       // Show notification about paid feature if name was changed
@@ -194,7 +207,8 @@ export default function ProfilePage() {
         alert("Profile updated successfully! 🎉")
       }
     } catch (error) {
-      alert("Failed to update profile. Please try again.")
+      console.error("Profile update error:", error)
+      alert(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`)
     }
   }
 

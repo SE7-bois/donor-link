@@ -13,7 +13,6 @@ import {
   Clock,
   Copy,
   ExternalLink,
-  Heart,
   Share2,
   Users,
   ChevronLeft,
@@ -37,6 +36,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { toast } from "sonner";
+import { useDonation } from "~/lib/hooks/use-donation";
+import { formatTokenAmount } from "~/lib/solana-tokens";
 
 export function FundraiserDetailSimple() {
   const params = useParams();
@@ -65,6 +66,8 @@ export function FundraiserDetailSimple() {
     fundraiserId ? { fundraiser_id: fundraiserId as Id<"fundraisers"> } : "skip"
   );
 
+
+
   // Fetch donations for this fundraiser
   const donations = useQuery(
     api.donations.getFundraiserDonations,
@@ -79,6 +82,9 @@ export function FundraiserDetailSimple() {
 
   // Delete fundraiser mutation
   const deleteFundraiserMutation = useMutation(api.fundraisers.deleteFundraiser);
+
+  // Donation functionality
+  const donation = useDonation();
 
   const [donationAmount, setDonationAmount] = useState("");
   const [stablecoin, setStablecoin] = useState<"USDC" | "USDT">("USDC");
@@ -96,9 +102,19 @@ export function FundraiserDetailSimple() {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   }
 
-  const copyToClipboard = (address: string) => {
-    navigator.clipboard.writeText(address);
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
     setCopiedAddress(true);
+
+    // Show appropriate toast message
+    if (text.startsWith('http')) {
+      toast.success("Link copied to clipboard!", {
+        description: "Share this fundraiser with others"
+      });
+    } else {
+      // For wallet addresses, no toast needed as we show inline feedback
+    }
+
     setTimeout(() => setCopiedAddress(false), 2000);
   }
 
@@ -118,11 +134,26 @@ export function FundraiserDetailSimple() {
     });
   };
 
-  const handleDonate = () => {
-    // TODO: Implement Solana payment integration
-    toast.info("Donation feature coming soon!", {
-      description: "Solana payment integration is in development."
+  const handleDonate = async () => {
+    if (!fundraiser) return;
+
+    const amount = parseFloat(donationAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid donation amount");
+      return;
+    }
+
+    const success = await donation.donate({
+      fundraiserId: fundraiserId,
+      recipientWalletAddress: fundraiser.owner_wallet_address,
+      amount: amount,
+      token: stablecoin,
+      donorDisplayName: donation.walletAddress, // We could add display name from user profile later
     });
+
+    if (success) {
+      setDonationAmount(""); // Clear the form on success
+    }
   };
 
   const handlePrevMedia = () => {
@@ -502,13 +533,6 @@ export function FundraiserDetailSimple() {
                     <Users className="h-4 w-4 text-muted-foreground mb-1" />
                     <span className="font-medium">{stats?.total_donors || 0}</span>
                     <span className="text-xs text-muted-foreground">Supporters</span>
-                    {/* View All Supporters Button - Subtle link below the supporters count */}
-                    <button
-                      onClick={() => setIsSupportersModalOpen(true)}
-                      className="text-xs text-purple-500 hover:text-purple-400 mt-1 transition-colors"
-                    >
-                      View All
-                    </button>
                   </div>
                   <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/20">
                     <Clock className="h-4 w-4 text-muted-foreground mb-1" />
@@ -525,13 +549,13 @@ export function FundraiserDetailSimple() {
                     </span>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="text-muted-foreground hover:text-foreground transition-colors">
+                    <button
+                      onClick={() => copyToClipboard(window.location.href)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      title="Share fundraiser"
+                    >
                       <Share2 className="h-4 w-4" />
                       <span className="sr-only">Share</span>
-                    </button>
-                    <button className="text-muted-foreground hover:text-foreground transition-colors">
-                      <Heart className="h-4 w-4" />
-                      <span className="sr-only">Favorite</span>
                     </button>
                   </div>
                 </div>
@@ -579,18 +603,57 @@ export function FundraiserDetailSimple() {
                   <div className="rounded-md bg-muted/20 p-3 text-sm">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Your {stablecoin} Balance:</span>
-                      <span className="font-medium">150.75 {stablecoin}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {donation.isLoadingBalances ? (
+                            <span className="animate-pulse">Loading...</span>
+                          ) : donation.isConnected ? (
+                            formatTokenAmount(donation.balances[stablecoin] || 0, stablecoin)
+                          ) : (
+                            "Connect wallet"
+                          )}
+                        </span>
+                        {donation.isConnected && (
+                          <button
+                            onClick={donation.refreshBalances}
+                            disabled={donation.isLoadingBalances}
+                            className="p-1 rounded-md hover:bg-muted/50 transition-colors disabled:opacity-50"
+                            title="Refresh balance"
+                          >
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <Button
                     onClick={handleDonate}
-                    disabled={!donationAmount || Number.parseFloat(donationAmount) <= 0}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    disabled={
+                      !donation.isConnected ||
+                      donation.isLoading ||
+                      !donationAmount ||
+                      Number.parseFloat(donationAmount) <= 0 ||
+                      (donation.balances[stablecoin] || 0) < Number.parseFloat(donationAmount || "0")
+                    }
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
                   >
-                    {donationAmount && Number.parseFloat(donationAmount) > 0
-                      ? `Donate $${donationAmount} ${stablecoin}`
-                      : "Enter an amount to donate"}
+                    {donation.isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Processing...
+                      </span>
+                    ) : !donation.isConnected ? (
+                      "Connect wallet to donate"
+                    ) : !donationAmount || Number.parseFloat(donationAmount) <= 0 ? (
+                      "Enter an amount to donate"
+                    ) : (donation.balances[stablecoin] || 0) < Number.parseFloat(donationAmount) ? (
+                      `Insufficient ${stablecoin} balance`
+                    ) : (
+                      `Donate $${donationAmount} ${stablecoin}`
+                    )}
                   </Button>
 
                   <p className="text-xs text-muted-foreground text-center">
@@ -600,43 +663,42 @@ export function FundraiserDetailSimple() {
               </div>
 
               {/* Recent supporters */}
-              <div className="rounded-lg border border-border/50 bg-card p-6 space-y-4">
+              <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Recent Supporters</h3>
-                  {/* View All Supporters Button - Alternative placement as text link */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <h3 className="text-base font-medium">Recent Supporters</h3>
+                  <button
                     onClick={() => setIsSupportersModalOpen(true)}
-                    className="text-xs text-purple-500 hover:text-purple-400 h-auto p-0"
+                    className="text-xs text-purple-500 hover:text-purple-400 transition-colors"
                   >
                     View All
-                  </Button>
+                  </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2 max-h-48 overflow-y-auto">
                   {recentSupporters && recentSupporters.length > 0 ? (
-                    recentSupporters.map((supporter) => (
-                      <div key={supporter.id} className="flex justify-between items-center text-sm">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-6 w-6 rounded-full bg-muted/50"></div>
-                          <span>{supporter.display_name || truncateAddress(supporter.address)}</span>
+                    recentSupporters.slice(0, 3).map((supporter) => (
+                      <div key={supporter.id} className="flex justify-between items-center text-sm py-1">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <div className="h-5 w-5 rounded-full bg-muted/50 flex-shrink-0"></div>
+                          <span className="truncate text-xs">
+                            {supporter.display_name || truncateAddress(supporter.address)}
+                          </span>
                         </div>
-                        <div className="flex flex-col items-end">
-                          <span className="font-medium">{formatCurrency(supporter.amount)}</span>
+                        <div className="flex flex-col items-end ml-2 flex-shrink-0">
+                          <span className="font-medium text-xs">{formatCurrency(supporter.amount)}</span>
                           <span className="text-xs text-muted-foreground">{supporter.timestamp}</span>
                         </div>
                       </div>
                     ))
                   ) : donations && donations.length > 0 ? (
-                    donations.slice(0, 5).map((donation, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-6 w-6 rounded-full bg-muted/50"></div>
-                          <span>{donation.donor_display}</span>
+                    donations.slice(0, 3).map((donation, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm py-1">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <div className="h-5 w-5 rounded-full bg-muted/50 flex-shrink-0"></div>
+                          <span className="truncate text-xs">{donation.donor_display}</span>
                         </div>
-                        <div className="flex flex-col items-end">
-                          <span className="font-medium">{formatCurrency(donation.amount)}</span>
+                        <div className="flex flex-col items-end ml-2 flex-shrink-0">
+                          <span className="font-medium text-xs">{formatCurrency(donation.amount)}</span>
                           <span className="text-xs text-muted-foreground">
                             {formatDate(donation.created_at)}
                           </span>
@@ -644,24 +706,24 @@ export function FundraiserDetailSimple() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-muted-foreground">No supporters yet.</p>
+                    <div className="text-center py-3">
+                      <p className="text-xs text-muted-foreground">Be the first to support!</p>
                     </div>
                   )}
                 </div>
 
-                <Separator />
+                {((recentSupporters && recentSupporters.length > 3) ||
+                  (donations && donations.length > 3)) && (
+                    <div className="pt-2 border-t border-border/30">
+                      <p className="text-xs text-center text-muted-foreground">
+                        +{Math.max(
+                          (recentSupporters?.length || 0) - 3,
+                          (donations?.length || 0) - 3
+                        )} more supporters
+                      </p>
+                    </div>
+                  )}
 
-                {/* View All Supporters Button - Primary placement */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSupportersModalOpen(true)}
-                  className="w-full text-muted-foreground hover:text-foreground"
-                >
-                  View All Supporters
-                  <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                </Button>
               </div>
             </div>
           </div>

@@ -250,7 +250,7 @@ export const getLeaderboard = query({
     }
 
     // Convert to array and sort by total donated (descending)
-    const leaderboardData = Array.from(donorTotals.entries())
+    const sortedDonors = Array.from(donorTotals.entries())
       .map(([walletAddress, data]) => ({
         walletAddress,
         totalDonated: data.totalDonated,
@@ -258,15 +258,25 @@ export const getLeaderboard = query({
         lastDonation: data.lastDonation,
       }))
       .sort((a, b) => b.totalDonated - a.totalDonated)
-      .slice(0, limit)
-      .map((donor, index) => {
+      .slice(0, limit);
+
+    // Enrich with user display names
+    const leaderboardData = await Promise.all(
+      sortedDonors.map(async (donor, index) => {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_wallet_address", (q) => q.eq("wallet_address", donor.walletAddress))
+          .first();
+
         const rank = index + 1;
         return {
           ...donor,
           rank,
+          displayName: user?.display_name || null,
           id: `${donor.walletAddress}-${rank}`, // Create a unique ID for the component
         };
-      });
+      })
+    );
 
     return leaderboardData;
   },
@@ -304,10 +314,17 @@ export const getUserLeaderboardPosition = query({
 
     const userTotal = donorTotals.get(args.wallet_address) || 0;
 
+    // Get user's display name
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_wallet_address", (q) => q.eq("wallet_address", args.wallet_address))
+      .first();
+
     return {
       rank: userPosition + 1,
       totalDonated: userTotal,
       walletAddress: args.wallet_address,
+      displayName: user?.display_name || null,
       id: `${args.wallet_address}-${userPosition + 1}`,
     };
   },

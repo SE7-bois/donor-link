@@ -33,6 +33,7 @@ interface Donor {
   rank: number
   donationCount: number
   lastDonation: number
+  displayName?: string | null
 }
 
 export function Leaderboard() {
@@ -78,12 +79,16 @@ export function Leaderboard() {
     rank: item.rank,
     donationCount: item.donationCount,
     lastDonation: item.lastDonation,
+    displayName: item.displayName,
   })) || []
 
   // Filter donors based on search query
-  const filteredDonors = donors.filter((donor) =>
-    donor.walletAddress.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const filteredDonors = donors.filter((donor) => {
+    const query = searchQuery.toLowerCase()
+    const addressMatch = donor.walletAddress.toLowerCase().includes(query)
+    const nameMatch = donor.displayName?.toLowerCase().includes(query) || false
+    return addressMatch || nameMatch
+  })
 
   // Calculate pagination values
   const totalItems = filteredDonors.length
@@ -116,6 +121,14 @@ export function Leaderboard() {
   // Function to truncate wallet address
   const truncateAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
+  }
+
+  // Function to format display name with address
+  const formatDisplayName = (displayName: string | null | undefined, walletAddress: string) => {
+    if (displayName?.trim()) {
+      return `${displayName} (${truncateAddress(walletAddress)})`
+    }
+    return truncateAddress(walletAddress)
   }
 
   // Function to copy wallet address to clipboard
@@ -156,6 +169,7 @@ export function Leaderboard() {
     rank: userPosition.rank,
     donationCount: 0, // Not available in position query
     lastDonation: 0, // Not available in position query
+    displayName: userPosition.displayName,
   } : undefined
 
   // Check if the current user is visible on the current page
@@ -193,7 +207,7 @@ export function Leaderboard() {
           <div className="flex items-center space-x-2">
             {renderRankIcon(currentUserDonor.rank)}
             <span className="text-sm font-medium text-purple-400">
-              {truncateAddress(currentUserDonor.walletAddress)}
+              {formatDisplayName(currentUserDonor.displayName, currentUserDonor.walletAddress)}
             </span>
             <button
               onClick={() => copyToClipboard(currentUserDonor.walletAddress, currentUserDonor.id)}
@@ -238,7 +252,7 @@ export function Leaderboard() {
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by wallet address..."
+          placeholder="Search by name or wallet address..."
           className="pl-9 bg-background border-border/50 h-10"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -366,7 +380,7 @@ export function Leaderboard() {
                                 isCurrentUser ? "text-purple-400" : "text-foreground",
                               )}
                             >
-                              {truncateAddress(donor.walletAddress)}
+                              {formatDisplayName(donor.displayName, donor.walletAddress)}
                             </span>
                             <button
                               onClick={() => copyToClipboard(donor.walletAddress, donor.id)}
