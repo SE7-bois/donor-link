@@ -31,6 +31,16 @@ export const createFundraiser = mutation({
       throw new Error("User must be authenticated to create fundraiser");
     }
 
+    // Validate fundraiser goal amount (max $1M USD)
+    const MAX_FUNDRAISER_GOAL = 1000000; // $1 Million USD
+    if (args.target_amount > MAX_FUNDRAISER_GOAL) {
+      throw new Error(`Fundraiser goal cannot exceed $${MAX_FUNDRAISER_GOAL.toLocaleString()} USD`);
+    }
+
+    if (args.target_amount <= 0) {
+      throw new Error("Fundraiser goal must be greater than $0");
+    }
+
     return await ctx.db.insert("fundraisers", {
       title: args.title,
       description: args.description,
@@ -179,6 +189,18 @@ export const updateFundraiser = mutation({
     // Authorization check: only owner can update
     if (fundraiser.owner_wallet_address !== args.wallet_address) {
       throw new Error("Not authorized to update this fundraiser");
+    }
+
+    // Validate target amount if being updated (max $1M USD)
+    if (args.target_amount !== undefined) {
+      const MAX_FUNDRAISER_GOAL = 1000000; // $1 Million USD
+      if (args.target_amount > MAX_FUNDRAISER_GOAL) {
+        throw new Error(`Fundraiser goal cannot exceed $${MAX_FUNDRAISER_GOAL.toLocaleString()} USD`);
+      }
+
+      if (args.target_amount <= 0) {
+        throw new Error("Fundraiser goal must be greater than $0");
+      }
     }
 
     const updateData: any = {};

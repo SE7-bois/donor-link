@@ -27,6 +27,21 @@ export const recordDonation = mutation({
       throw new Error("Fundraiser not found");
     }
 
+    // Prevent self-donations: Users cannot donate to their own fundraisers
+    if (fundraiser.owner_wallet_address === args.donor_wallet_address) {
+      throw new Error("You cannot donate to your own fundraiser");
+    }
+
+    // Validate donation amount (max $1M USD per transaction)
+    const MAX_DONATION_AMOUNT = 1000000; // $1 Million USD
+    if (args.amount > MAX_DONATION_AMOUNT) {
+      throw new Error(`Single donation cannot exceed $${MAX_DONATION_AMOUNT.toLocaleString()} USD`);
+    }
+
+    if (args.amount <= 0) {
+      throw new Error("Donation amount must be greater than $0");
+    }
+
     // Record the donation
     const donationId = await ctx.db.insert("donations", {
       fundraiser_id: args.fundraiser_id,

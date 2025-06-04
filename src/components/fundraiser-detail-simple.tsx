@@ -134,6 +134,45 @@ export function FundraiserDetailSimple() {
     });
   };
 
+  // Format number for display with thousands separators
+  const formatNumberForDisplay = (value: string) => {
+    if (!value) return "";
+
+    // Split by decimal point
+    const parts = value.split('.');
+    const integerPart = parts[0] || "";
+    const decimalPart = parts[1];
+
+    // Add thousands separators to integer part
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Combine with decimal part if exists
+    return decimalPart !== undefined ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+  };
+
+  // Parse display value back to plain number string
+  const parseDisplayValue = (displayValue: string) => {
+    return displayValue.replace(/,/g, '');
+  };
+
+  // Handle number input with auto-formatting and regex validation
+  const handleDonationInput = (value: string) => {
+    // Allow empty string for clearing the field
+    if (value === "") {
+      setDonationAmount("");
+      return;
+    }
+
+    // Remove all non-digit characters except decimal point
+    const cleanValue = value.replace(/[^\d.]/g, '');
+
+    // Only allow numbers and one decimal point
+    const regex = /^\d*\.?\d{0,2}$/;
+    if (regex.test(cleanValue)) {
+      setDonationAmount(cleanValue);
+    }
+  };
+
   const handleDonate = async () => {
     if (!fundraiser) return;
 
@@ -565,101 +604,124 @@ export function FundraiserDetailSimple() {
               <div className="rounded-lg border border-border/50 bg-card p-6 space-y-6">
                 <h3 className="text-lg font-medium">Support this Project</h3>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="amount" className="text-sm text-muted-foreground">
-                      Donation Amount
-                    </label>
-                    <div className="relative">
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="Enter amount"
-                        value={donationAmount}
-                        onChange={(e) => setDonationAmount(e.target.value)}
-                        className="pl-8"
-                      />
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <span className="text-muted-foreground">$</span>
+                {/* Show message for owners */}
+                {isOwner && (
+                  <div className="p-4 rounded-md bg-muted/30 border border-border/50">
+                    <p className="text-sm text-muted-foreground text-center">
+                      You cannot donate to your own fundraiser
+                    </p>
+                  </div>
+                )}
+
+                {/* Only show donation form if user is not the owner */}
+                {!isOwner && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="amount" className="text-sm text-muted-foreground">
+                        Donation Amount <span className="text-xs">(Max: $1,000,000)</span>
+                      </label>
+                      <div className="relative">
+                        <Input
+                          id="amount"
+                          type="text"
+                          placeholder="Enter amount"
+                          value={formatNumberForDisplay(donationAmount)}
+                          onChange={(e) => {
+                            const cleanValue = parseDisplayValue(e.target.value);
+                            handleDonationInput(cleanValue);
+                          }}
+                          className={`pl-8 ${Number.parseFloat(donationAmount) > 1000000 ? 'border-red-500 focus:border-red-500' : ''}`}
+                        />
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <span className="text-muted-foreground">$</span>
+                        </div>
                       </div>
+                      {donationAmount && Number.parseFloat(donationAmount) > 1000000 && (
+                        <p className="text-xs text-red-500 mt-1">
+                          Maximum donation amount is $1,000,000 USD
+                        </p>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label htmlFor="stablecoin" className="text-sm text-muted-foreground">
-                      Select Stablecoin
-                    </label>
-                    <Select value={stablecoin} onValueChange={(value) => setStablecoin(value as "USDC" | "USDT")}>
-                      <SelectTrigger id="stablecoin">
-                        <SelectValue placeholder="Select stablecoin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="USDC">USDC</SelectItem>
-                        <SelectItem value="USDT">USDT</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div className="space-y-2">
+                      <label htmlFor="stablecoin" className="text-sm text-muted-foreground">
+                        Select Stablecoin
+                      </label>
+                      <Select value={stablecoin} onValueChange={(value) => setStablecoin(value as "USDC" | "USDT")}>
+                        <SelectTrigger id="stablecoin">
+                          <SelectValue placeholder="Select stablecoin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USDC">USDC</SelectItem>
+                          <SelectItem value="USDT">USDT</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="rounded-md bg-muted/20 p-3 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Your {stablecoin} Balance:</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {donation.isLoadingBalances ? (
-                            <span className="animate-pulse">Loading...</span>
-                          ) : donation.isConnected ? (
-                            formatTokenAmount(donation.balances[stablecoin] || 0, stablecoin)
-                          ) : (
-                            "Connect wallet"
+                    <div className="rounded-md bg-muted/20 p-3 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Your {stablecoin} Balance:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {donation.isLoadingBalances ? (
+                              <span className="animate-pulse">Loading...</span>
+                            ) : donation.isConnected ? (
+                              formatTokenAmount(donation.balances[stablecoin] || 0, stablecoin)
+                            ) : (
+                              "Connect wallet"
+                            )}
+                          </span>
+                          {donation.isConnected && (
+                            <button
+                              onClick={donation.refreshBalances}
+                              disabled={donation.isLoadingBalances}
+                              className="p-1 rounded-md hover:bg-muted/50 transition-colors disabled:opacity-50"
+                              title="Refresh balance"
+                            >
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                            </button>
                           )}
-                        </span>
-                        {donation.isConnected && (
-                          <button
-                            onClick={donation.refreshBalances}
-                            disabled={donation.isLoadingBalances}
-                            className="p-1 rounded-md hover:bg-muted/50 transition-colors disabled:opacity-50"
-                            title="Refresh balance"
-                          >
-                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                          </button>
-                        )}
+                        </div>
                       </div>
                     </div>
+
+                    <Button
+                      onClick={handleDonate}
+                      disabled={
+                        !donation.isConnected ||
+                        donation.isLoading ||
+                        !donationAmount ||
+                        Number.parseFloat(donationAmount) <= 0 ||
+                        Number.parseFloat(donationAmount) > 1000000 ||
+                        (donation.balances[stablecoin] || 0) < Number.parseFloat(donationAmount || "0")
+                      }
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+                    >
+                      {donation.isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          Processing...
+                        </span>
+                      ) : !donation.isConnected ? (
+                        "Connect wallet to donate"
+                      ) : !donationAmount || Number.parseFloat(donationAmount) <= 0 ? (
+                        "Enter an amount to donate"
+                      ) : Number.parseFloat(donationAmount) > 1000000 ? (
+                        "Amount exceeds $1M limit"
+                      ) : (donation.balances[stablecoin] || 0) < Number.parseFloat(donationAmount) ? (
+                        `Insufficient ${stablecoin} balance`
+                      ) : (
+                        `Donate $${donationAmount} ${stablecoin}`
+                      )}
+                    </Button>
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      Donations are processed on the Solana blockchain.
+                    </p>
                   </div>
-
-                  <Button
-                    onClick={handleDonate}
-                    disabled={
-                      !donation.isConnected ||
-                      donation.isLoading ||
-                      !donationAmount ||
-                      Number.parseFloat(donationAmount) <= 0 ||
-                      (donation.balances[stablecoin] || 0) < Number.parseFloat(donationAmount || "0")
-                    }
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
-                  >
-                    {donation.isLoading ? (
-                      <span className="flex items-center gap-2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                        Processing...
-                      </span>
-                    ) : !donation.isConnected ? (
-                      "Connect wallet to donate"
-                    ) : !donationAmount || Number.parseFloat(donationAmount) <= 0 ? (
-                      "Enter an amount to donate"
-                    ) : (donation.balances[stablecoin] || 0) < Number.parseFloat(donationAmount) ? (
-                      `Insufficient ${stablecoin} balance`
-                    ) : (
-                      `Donate $${donationAmount} ${stablecoin}`
-                    )}
-                  </Button>
-
-                  <p className="text-xs text-muted-foreground text-center">
-                    Donations are processed on the Solana blockchain.
-                  </p>
-                </div>
+                )}
               </div>
 
               {/* Recent supporters */}

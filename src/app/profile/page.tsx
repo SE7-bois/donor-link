@@ -179,6 +179,12 @@ export default function ProfilePage() {
       return
     }
 
+    // Client-side validation
+    if (displayName.trim().length > 16) {
+      alert("Display name must be 16 characters or less")
+      return
+    }
+
     console.log("Updating profile for wallet:", userWalletAddress)
     console.log("Profile data:", {
       display_name: displayName.trim() || undefined,
@@ -242,9 +248,35 @@ export default function ProfilePage() {
             <div className="flex-1 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="displayName">Display Name</Label>
+                  <Label htmlFor="displayName">
+                    Display Name
+                    {isEditing && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({displayName.length}/16)
+                      </span>
+                    )}
+                  </Label>
                   {isEditing ? (
-                    <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Enter your name" />
+                    <div className="space-y-1">
+                      <Input
+                        id="displayName"
+                        value={displayName}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.length <= 16) {
+                            setDisplayName(value);
+                          }
+                        }}
+                        placeholder="Enter your name"
+                        maxLength={16}
+                        className={displayName.length > 16 ? 'border-red-500 focus:border-red-500' : ''}
+                      />
+                      {displayName.length > 16 && (
+                        <p className="text-xs text-red-500">
+                          Display name must be 16 characters or less
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <p className="text-lg font-medium">{displayName || "Anonymous User"}</p>
                   )}

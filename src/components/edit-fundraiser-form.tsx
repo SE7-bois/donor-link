@@ -67,7 +67,8 @@ const formInputSchema = z.object({
 export const formSchema = formInputSchema.extend({
   goalAmount: formInputSchema.shape.goalAmount
     .transform((val) => parseFloat(val))
-    .refine((val) => val > 0, { message: "Goal amount must be greater than 0" }),
+    .refine((val) => val > 0, { message: "Goal amount must be greater than 0" })
+    .refine((val) => val <= 1000000, { message: "Goal amount cannot exceed $1,000,000 USD" }),
 });
 
 type FormInputSchema = z.infer<typeof formInputSchema>;
@@ -234,6 +235,45 @@ export function EditFundraiserForm() {
     // Manual cleanup for object URLs (no useEffect needed)
     if (itemToRemove.previewUrl && !itemToRemove.url) {
       URL.revokeObjectURL(itemToRemove.previewUrl);
+    }
+  };
+
+  // Format number for display with thousands separators
+  const formatNumberForDisplay = (value: string) => {
+    if (!value) return "";
+
+    // Split by decimal point
+    const parts = value.split('.');
+    const integerPart = parts[0] || "";
+    const decimalPart = parts[1];
+
+    // Add thousands separators to integer part
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Combine with decimal part if exists
+    return decimalPart !== undefined ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+  };
+
+  // Parse display value back to plain number string
+  const parseDisplayValue = (displayValue: string) => {
+    return displayValue.replace(/,/g, '');
+  };
+
+  // Handle number input with auto-formatting and regex validation
+  const handleNumberInput = (value: string, onChange: (value: string) => void) => {
+    // Allow empty string for clearing the field
+    if (value === "") {
+      onChange("");
+      return;
+    }
+
+    // Remove all non-digit characters except decimal point
+    const cleanValue = value.replace(/[^\d.]/g, '');
+
+    // Only allow numbers and one decimal point
+    const regex = /^\d*\.?\d{0,2}$/;
+    if (regex.test(cleanValue)) {
+      onChange(cleanValue);
     }
   };
 
@@ -527,13 +567,18 @@ export function EditFundraiserForm() {
                 name="goalAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fundraising Goal (USD)</FormLabel>
+                    <FormLabel>Fundraising Goal (USD) <span className="text-xs text-muted-foreground">(Max: $1,000,000)</span></FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
+                        type="text"
+                        placeholder="e.g., 10,000 or 10,000.50"
+                        value={formatNumberForDisplay(field.value)}
+                        onChange={e => {
+                          const cleanValue = parseDisplayValue(e.target.value);
+                          handleNumberInput(cleanValue, field.onChange);
+                        }}
+                        onBlur={field.onBlur}
+                        name={field.name}
                       />
                     </FormControl>
                     <FormDescription>

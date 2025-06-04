@@ -111,6 +111,14 @@ export const updateProfile = mutation({
       throw new Error("User not found");
     }
 
+    // Server-side validation for display name character limit
+    if (args.display_name !== undefined && args.display_name !== null) {
+      const trimmedDisplayName = args.display_name.trim();
+      if (trimmedDisplayName.length > 16) {
+        throw new Error("Display name must be 16 characters or less");
+      }
+    }
+
     // Build update object with only provided fields
     const updateData: any = {};
 

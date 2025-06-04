@@ -99,6 +99,21 @@ export function useDonation() {
       return false;
     }
 
+    // Prevent self-donations: Check if user is trying to donate to themselves
+    if (publicKey.toBase58() === recipientWalletAddress) {
+      toast.error("You cannot donate to your own fundraiser");
+      return false;
+    }
+
+    // Validate donation amount limits
+    const MAX_DONATION_AMOUNT = 1000000; // $1 Million USD
+    if (amount > MAX_DONATION_AMOUNT) {
+      toast.error("Donation amount too large", {
+        description: `Maximum donation amount is $${MAX_DONATION_AMOUNT.toLocaleString()} USD per transaction`
+      });
+      return false;
+    }
+
     // Check if user has sufficient balance
     const balance = state.balances[token] || 0;
     if (balance < amount) {
